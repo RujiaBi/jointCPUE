@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# jointCPUE <img src="man/figures/logo.png" align="right" height="136" alt="jointCPUE logo" />
+# jointCPUE <img src="man/figures/logo.png" align="right" height="168" alt="jointCPUE logo" />
 
 > Joint spatiotemporal CPUE standardization in TMB
 
