@@ -273,6 +273,7 @@ fit <- jointCPUE(
   q_diffs_system = "on",
   q_diffs_time = "off",
   q_diffs_spatial = "off",
+  obs_sd = "fleet",
   ncores = 4
 )
 ```
@@ -296,6 +297,14 @@ fit <- jointCPUE(
 
 These terms are centered relative to the reference fleet and are used to adjust
 catchability, not the standardized abundance index.
+
+### Observation error
+
+- `obs_sd = "shared"` uses one lognormal observation SD across all fleets
+- `obs_sd = "fleet"` estimates one lognormal observation SD for each fleet
+
+This setting changes the observation-error structure only. It does not change
+how the standardized abundance index is calculated.
 
 ## Extract the standardized index
 
@@ -473,6 +482,7 @@ fit_year <- jointCPUE(
   q_diffs_system = "on",
   q_diffs_time = "off",
   q_diffs_spatial = "on",
+  obs_sd = "fleet",
   ncores = ncores
 )
 ```
@@ -561,6 +571,7 @@ fit_month <- jointCPUE(
   q_diffs_system = "on",
   q_diffs_time = "off",
   q_diffs_spatial = "off",
+  obs_sd = "fleet",
   ncores = ncores
 )
 ```
@@ -647,6 +658,7 @@ fit_year <- jointCPUE(
   q_diffs_system = "on",
   q_diffs_time = "off",
   q_diffs_spatial = "on",
+  obs_sd = "fleet",
   ncores = ncores
 )
 ```
@@ -731,6 +743,7 @@ fit_month <- jointCPUE(
   q_diffs_system = "on",
   q_diffs_time = "off",
   q_diffs_spatial = "off",
+  obs_sd = "fleet",
   ncores = ncores
 )
 ```
