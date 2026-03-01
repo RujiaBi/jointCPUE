@@ -37,6 +37,9 @@ NULL
 #'   constraint over observed month levels, enters the observation model only,
 #'   and is excluded from the standardized index. When `index = "monthly"`, the
 #'   month effect is always disabled regardless of this setting.
+#' @param obs_sd Either `"shared"` or `"fleet"`. Controls the observation-error
+#'   standard deviation in the lognormal likelihood. `"shared"` uses a single
+#'   SD across all fleets. `"fleet"` estimates one SD per fleet.
 #' @param control Control list passed to [stats::nlminb()].
 #' @param ncores Optional integer. If provided, sets the number of OpenMP threads. Passed to [TMB::openmp()].
 #' @param silent Logical. Passed to [TMB::MakeADFun()].
@@ -60,6 +63,7 @@ jointCPUE <- function(
     index = c("monthly", "yearly"),
     month_col = NULL,
     month_diffs = c("on", "off"),
+    obs_sd = c("shared", "fleet"),
     silent = FALSE
 ) {
   pop_spatial <- match.arg(pop_spatial)
@@ -70,6 +74,7 @@ jointCPUE <- function(
   q_diffs_spatial <- match.arg(q_diffs_spatial)
   index <- match.arg(index)
   month_diffs <- match.arg(month_diffs)
+  obs_sd <- match.arg(obs_sd)
   month_diffs <- if (index == "yearly") month_diffs else "off"
   
   data_utm <- as.data.frame(data_utm)
@@ -98,6 +103,7 @@ jointCPUE <- function(
   data_tmb$use_month_fe <- as.integer(
     index == "yearly" && month_diffs == "on" && data_tmb$n_m > 1L
   )
+  data_tmb$use_fleet_sd <- as.integer(obs_sd == "fleet")
   data_tmb$use_q_diffs_time <- as.integer(q_diffs_time == "on" && n_f > 1L)
   data_tmb$use_q_diffs_spatial <- as.integer(q_diffs_spatial == "on" && n_f > 1L)
   
@@ -117,6 +123,7 @@ jointCPUE <- function(
     q_diffs_spatial = q_diffs_spatial,
     index = index,
     month_diffs = month_diffs,
+    obs_sd = obs_sd,
     n_m = data_tmb$n_m,
     has_tf = data_tmb$has_tf
   )
@@ -192,6 +199,7 @@ jointCPUE <- function(
       q_diffs_spatial = q_diffs_spatial,
       index = index,
       month_diffs = month_diffs,
+      obs_sd = obs_sd,
       month_col = prep$time$month_col,
       month_values = prep$time$month_values,
       DLL = DLL,

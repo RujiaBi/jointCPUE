@@ -7,6 +7,7 @@
                               q_diffs_spatial = c("on", "off"),
                               index = c("monthly", "yearly"),
                               month_diffs = c("on", "off"),
+                              obs_sd = c("shared", "fleet"),
                               n_m = 1L,
                               has_tf = NULL) {
   pop_spatial <- match.arg(pop_spatial)
@@ -16,8 +17,15 @@
   q_diffs_spatial <- match.arg(q_diffs_spatial)
   index <- match.arg(index)
   month_diffs <- match.arg(month_diffs)
+  obs_sd <- match.arg(obs_sd)
 
   map <- list()
+
+  if (obs_sd == "shared") {
+    map$ln_sd_fleet <- factor(rep(NA, length(parameters$ln_sd_fleet)))
+  } else {
+    map$ln_sd <- factor(NA)
+  }
 
   if (index != "yearly" || month_diffs != "on" || n_m <= 1L) {
     map$month_beta <- factor(rep(NA, length(parameters$month_beta)))

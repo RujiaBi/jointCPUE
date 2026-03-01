@@ -61,7 +61,7 @@ data_input <- data.frame(
   cpue = dd$CPUE + 1e-05,
   lon = dd$X,
   lat = dd$Y,
-  tid = as.numeric(as.factor(dd$t_month)) - 1,
+  tid = dd$t_month,
   fleetid = dd$Fleet_code
 )
 ```
@@ -92,6 +92,7 @@ ncores <- 32
 fit_1 <- jointCPUE(
   data_utm = data_utm,
   mesh = mesh,
+  index = "monthly",
   pop_spatial = "off",
   pop_spatiotemporal = "off",
   q_diffs_system = "on",
@@ -139,6 +140,7 @@ plots_1$spatial_residual
 fit_2 <- jointCPUE(
   data_utm = data_utm,
   mesh = mesh,
+  index = "monthly",
   pop_spatial = "on",
   pop_spatiotemporal = "off",
   q_diffs_system = "on",
@@ -186,6 +188,7 @@ plots_2$spatial_residual
 fit_3 <- jointCPUE(
   data_utm = data_utm,
   mesh = mesh,
+  index = "monthly",
   pop_spatial = "on",
   pop_spatiotemporal = "on",
   pop_spatiotemporal_type = "iid",
@@ -234,6 +237,7 @@ plots_3$spatial_residual
 fit_4 <- jointCPUE(
   data_utm = data_utm,
   mesh = mesh,
+  index = "monthly",
   pop_spatial = "on",
   pop_spatiotemporal = "on",
   pop_spatiotemporal_type = "iid",

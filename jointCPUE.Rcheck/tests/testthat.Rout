@@ -29,10 +29,10 @@ Type 'q()' to quit R.
 > Sys.setenv(TESTTHAT_CPUS = "1")
 > 
 > test_check("jointCPUE")
-[ FAIL 0 | WARN 1 | SKIP 0 | PASS 71 ]
+[ FAIL 0 | WARN 1 | SKIP 0 | PASS 85 ]
 
-[ FAIL 0 | WARN 1 | SKIP 0 | PASS 71 ]
+[ FAIL 0 | WARN 1 | SKIP 0 | PASS 85 ]
 > 
 > proc.time()
    user  system elapsed 
-  1.535   0.105   1.680 
+  1.641   0.107   1.789 

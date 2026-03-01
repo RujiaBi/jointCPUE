@@ -41,6 +41,23 @@ test_that("plot helpers return ggplot objects for available q-differences and in
   )
 })
 
+test_that("plot_index auto-rotates year-month labels vertically", {
+  index_df <- data.frame(
+    time = 1:3,
+    index = c(10, 12, 15),
+    cv = c(0.2, 0.15, 0.1)
+  )
+
+  p_month <- plot_index(index_df, time_values = c("2001-01", "2001-02", "2001-04"))
+  p_year <- plot_index(index_df, time_values = c("2001", "2002", "2004"))
+
+  expect_equal(p_month$theme$axis.text.x$angle, 90)
+  expect_equal(p_month$theme$axis.text.x$vjust, 0.5)
+  expect_equal(p_month$labels$x, "Year-Month")
+  expect_equal(p_year$theme$axis.text.x$angle, 45)
+  expect_equal(p_year$labels$x, "Year")
+})
+
 test_that("get_month_diffs returns observed month values and effects", {
   fit <- mock_jointCPUE_fit(month_values = c(4L, 6L, 11L))
   md <- get_month_diffs(fit)

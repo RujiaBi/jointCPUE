@@ -10,7 +10,9 @@ plot_month_diffs(object)
 \item{object}{A fitted \code{jointCPUE} object.}
 }
 \value{
-A ggplot object.
+For \code{get_month_diffs()}, a data.frame with columns \code{month} and
+\code{effect}, or \code{NULL} when month fixed effects are not available for the
+fitted model. For \code{plot_month_diffs()}, a ggplot object.
 }
 \description{
 Plots estimated calendar-month fixed effects from a fitted \code{jointCPUE}

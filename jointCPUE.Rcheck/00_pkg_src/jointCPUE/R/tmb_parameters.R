@@ -15,6 +15,7 @@
 
   list(
     ln_sd = 0.0,
+    ln_sd_fleet = rep(0.0, n_f),
     ln_H_input = c(0.0, 0.0),
     ln_range_1 = 0.0,
     ln_sigma_0_1 = 0.0,

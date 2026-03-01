@@ -85,12 +85,14 @@ Type objective_function<Type>::operator() ()
   DATA_INTEGER(use_pop_spatiotemporal);
   DATA_INTEGER(use_pop_spatiotemporal_rw);
   DATA_INTEGER(use_month_fe);
+  DATA_INTEGER(use_fleet_sd);
   DATA_INTEGER(use_q_diffs_time);
   DATA_INTEGER(use_q_diffs_spatial);
 
   DATA_STRUCT(spde, spde_aniso_t);
 
   PARAMETER(ln_sd);
+  PARAMETER_VECTOR(ln_sd_fleet);
   PARAMETER_VECTOR(ln_H_input);
 
   PARAMETER(ln_range_1);
@@ -112,14 +114,19 @@ Type objective_function<Type>::operator() ()
   Type nll = 0;
   Type nll_prior = 0;
   Type nll_penalty = 0;
-  Type sd = exp(ln_sd);
+  Type sd_shared = exp(ln_sd);
   Type range_1 = exp(ln_range_1);
   Type sigma_0_1 = exp(ln_sigma_0_1);
   Type sigma_t_1 = exp(ln_sigma_t_1);
   Type fleet_std_dev = exp(fleet_ln_std_dev);
   Type fleet_t_std_dev = exp(fleet_t_ln_std_dev);
+  vector<Type> sd_fleet(n_f);
   bool range_prior_added = false;
   Type kappa_1 = sqrt(Type(8.0)) / range_1;
+
+  for (int f = 0; f < n_f; f++) {
+    sd_fleet(f) = (use_fleet_sd == 1) ? exp(ln_sd_fleet(f)) : sd_shared;
+  }
 
   matrix<Type> H(2, 2);
   H(0, 0) = exp(ln_H_input(0));
@@ -278,7 +285,7 @@ Type objective_function<Type>::operator() ()
     mu_hat_i(i) = exp(eta1);
     residual_raw_i(i) = b_i(i) - mu_hat_i(i);
     residual_log_i(i) = log(b_i(i)) - eta1;
-    nll -= dlnorm_bc(b_i(i), eta1, sd, true);
+    nll -= dlnorm_bc(b_i(i), eta1, sd_fleet(fid), true);
   }
 
   vector<Type> s_effect_proj_1(n_g);
@@ -332,6 +339,7 @@ Type objective_function<Type>::operator() ()
   REPORT(fleet_t);
   REPORT(fleet_s);
   REPORT(month_effect_m);
+  REPORT(sd_fleet);
   REPORT(eta_hat_i);
   REPORT(mu_hat_i);
   REPORT(residual_raw_i);

@@ -12,10 +12,23 @@
 #' @param time_positions Optional numeric vector of x-axis positions. Must have
 #'   the same length as the number of rows in `index_df`. This can be used to
 #'   preserve gaps in time, for example when some calendar years are missing.
+#' @param x_text_angle Optional numeric angle for x-axis text. If `NULL`,
+#'   `plot_index()` uses `90` for year-month-like labels and `45` otherwise.
+#' @param x_text_hjust Optional horizontal justification for x-axis text. If
+#'   `NULL`, a value matching `x_text_angle` is chosen automatically.
+#' @param x_text_vjust Optional vertical justification for x-axis text. If
+#'   `NULL`, a value matching `x_text_angle` is chosen automatically.
 #'
 #' @return A ggplot object.
 #' @export
-plot_index <- function(index_df, time_values = NULL, time_positions = NULL) {
+plot_index <- function(
+    index_df,
+    time_values = NULL,
+    time_positions = NULL,
+    x_text_angle = NULL,
+    x_text_hjust = NULL,
+    x_text_vjust = NULL
+) {
   req <- c("time", "index", "cv")
   miss <- setdiff(req, names(index_df))
   if (length(miss)) {
@@ -109,14 +122,34 @@ plot_index <- function(index_df, time_values = NULL, time_positions = NULL) {
 
   if (!is.null(time_values) || !is.null(time_positions)) {
     x_labels <- if (is.null(time_values)) time_seq else time_values
+    x_labels_chr <- as.character(x_labels)
+    has_month_labels <- any(grepl("-", x_labels_chr, fixed = TRUE))
+
+    if (is.null(x_text_angle)) {
+      x_text_angle <- if (has_month_labels || any(nchar(x_labels_chr) > 4L)) 90 else 45
+    }
+
+    angle_norm <- ((x_text_angle %% 360) + 360) %% 360
+    if (is.null(x_text_hjust)) {
+      x_text_hjust <- 1
+    }
+    if (is.null(x_text_vjust)) {
+      x_text_vjust <- if (angle_norm %in% c(90, 270)) 0.5 else 1
+    }
+
     p <- p +
       ggplot2::scale_x_continuous(
         breaks = time_seq,
         labels = x_labels
       ) +
-      ggplot2::labs(x = "Year") +
+      ggplot2::labs(x = if (has_month_labels) "Year-Month" else "Year") +
       ggplot2::theme(
-        axis.text.x = ggplot2::element_text(angle = 45, hjust = 1, colour = "grey20")
+        axis.text.x = ggplot2::element_text(
+          angle = x_text_angle,
+          hjust = x_text_hjust,
+          vjust = x_text_vjust,
+          colour = "grey20"
+        )
       )
   }
 

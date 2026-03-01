@@ -19,6 +19,7 @@ jointCPUE(
   index = c("monthly", "yearly"),
   month_col = NULL,
   month_diffs = c("on", "off"),
+  obs_sd = c("shared", "fleet"),
   silent = FALSE
 )
 }
@@ -62,6 +63,10 @@ effect is added when \code{index = "yearly"}. The month effect uses a sum-to-zer
 constraint over observed month levels, enters the observation model only,
 and is excluded from the standardized index. When \code{index = "monthly"}, the
 month effect is always disabled regardless of this setting.}
+
+\item{obs_sd}{Either \code{"shared"} or \code{"fleet"}. Controls the observation-error
+standard deviation in the lognormal likelihood. \code{"shared"} uses a single
+SD across all fleets. \code{"fleet"} estimates one SD per fleet.}
 
 \item{silent}{Logical. Passed to \code{\link[TMB:MakeADFun]{TMB::MakeADFun()}}.}
 }

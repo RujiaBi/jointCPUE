@@ -4,7 +4,14 @@
 \alias{plot_index}
 \title{Plot standardized CPUE index and CV}
 \usage{
-plot_index(index_df, time_values = NULL, time_positions = NULL)
+plot_index(
+  index_df,
+  time_values = NULL,
+  time_positions = NULL,
+  x_text_angle = NULL,
+  x_text_hjust = NULL,
+  x_text_vjust = NULL
+)
 }
 \arguments{
 \item{index_df}{A data.frame returned by \code{\link[=get_index]{get_index()}} containing at least
@@ -18,6 +25,15 @@ values in \code{index_df$time}.}
 \item{time_positions}{Optional numeric vector of x-axis positions. Must have
 the same length as the number of rows in \code{index_df}. This can be used to
 preserve gaps in time, for example when some calendar years are missing.}
+
+\item{x_text_angle}{Optional numeric angle for x-axis text. If \code{NULL},
+\code{plot_index()} uses \code{90} for year-month-like labels and \code{45} otherwise.}
+
+\item{x_text_hjust}{Optional horizontal justification for x-axis text. If
+\code{NULL}, a value matching \code{x_text_angle} is chosen automatically.}
+
+\item{x_text_vjust}{Optional vertical justification for x-axis text. If
+\code{NULL}, a value matching \code{x_text_angle} is chosen automatically.}
 }
 \value{
 A ggplot object.

@@ -57,7 +57,7 @@ data_input <- data.frame(
   lon = dd$X,
   lat = dd$Y,
   month = dd$Month,
-  tid = as.numeric(as.factor(dd$t_year)) - 1,
+  tid = dd$t_year,
   fleetid = dd$Fleet_code
 )
 ```
@@ -89,6 +89,7 @@ fit_1 <- jointCPUE(
   data_utm = data_utm,
   mesh = mesh,
   index = "yearly",
+  month_diffs = "on",
   pop_spatial = "off",
   pop_spatiotemporal = "off",
   q_diffs_system = "on",
@@ -137,6 +138,7 @@ fit_2 <- jointCPUE(
   data_utm = data_utm,
   mesh = mesh,
   index = "yearly",
+  month_diffs = "on",
   pop_spatial = "on",
   pop_spatiotemporal = "off",
   q_diffs_system = "on",
@@ -185,6 +187,7 @@ fit_3 <- jointCPUE(
   data_utm = data_utm,
   mesh = mesh,
   index = "yearly",
+  month_diffs = "on",
   pop_spatial = "on",
   pop_spatiotemporal = "on",
   pop_spatiotemporal_type = "iid",
@@ -237,6 +240,7 @@ fit_4 <- jointCPUE(
   data_utm = data_utm,
   mesh = mesh,
   index = "yearly",
+  month_diffs = "on",
   pop_spatial = "on",
   pop_spatiotemporal = "on",
   pop_spatiotemporal_type = "rw",
@@ -286,6 +290,7 @@ fit_5 <- jointCPUE(
   data_utm = data_utm,
   mesh = mesh,
   index = "yearly",
+  month_diffs = "on",
   pop_spatial = "on",
   pop_spatiotemporal = "on",
   pop_spatiotemporal_type = "rw",
