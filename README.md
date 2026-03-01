@@ -403,8 +403,10 @@ q^{(\mathrm{space})}_{f_i,s_i} +
 \varepsilon_i,
 $$
 
-where $b_i$ is CPUE, $\beta_{m_i}$ is the month fixed effect used only
-for yearly models, and $\sum_m \beta_m = 0$. The standardized index is
+where $b_i$ is CPUE, $\beta_{m_i}$ denotes an optional month fixed
+effect for yearly models. This term is included only when
+`month_diffs = "on"`; otherwise, it is omitted. When included, the
+constraint $\sum_m \beta_m = 0$ is imposed. The standardized index is
 then calculated from the population-level latent surface only:
 
 $$
@@ -476,7 +478,7 @@ fit_year <- jointCPUE(
   data_utm = data_utm,
   mesh = mesh,
   index = "yearly",
-  month_diffs = "on",
+  month_diffs = "off",
   pop_spatial = "on",
   pop_spatiotemporal = "on",
   pop_spatiotemporal_type = "iid",
@@ -652,7 +654,7 @@ fit_year <- jointCPUE(
   data_utm = data_utm,
   mesh = mesh,
   index = "yearly",
-  month_diffs = "on",
+  month_diffs = "off",
   pop_spatial = "on",
   pop_spatiotemporal = "on",
   pop_spatiotemporal_type = "iid",
