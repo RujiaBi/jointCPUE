@@ -1,15 +1,15 @@
 #' @keywords internal
-.as_intCPUEmesh <- function(mesh, loc_xy = NULL, xy_cols = NULL, recompute_A = c("auto", "always", "never")) {
+.as_jointCPUEmesh <- function(mesh, loc_xy = NULL, xy_cols = NULL, recompute_A = c("auto", "always", "never")) {
   recompute_A <- match.arg(recompute_A)
   
   if (!requireNamespace("fmesher", quietly = TRUE)) {
     stop("Package 'fmesher' is required.", call. = FALSE)
   }
   
-  # Case 1: already intCPUEmesh
-  if (inherits(mesh, "intCPUEmesh")) {
+  # Case 1: already jointCPUEmesh
+  if (inherits(mesh, "jointCPUEmesh")) {
     m <- mesh$mesh
-    if (is.null(m)) stop("`mesh` is an intCPUEmesh but `mesh$mesh` is NULL.", call. = FALSE)
+    if (is.null(m)) stop("`mesh` is an jointCPUEmesh but `mesh$mesh` is NULL.", call. = FALSE)
     
     # Ensure spde exists
     spde <- mesh$spde
@@ -52,7 +52,7 @@
   m <- mesh
   if (is.null(m)) stop("`mesh` is NULL.", call. = FALSE)
   
-  if (is.null(loc_xy)) stop("When `mesh` is not an intCPUEmesh, you must provide `loc_xy`.", call. = FALSE)
+  if (is.null(loc_xy)) stop("When `mesh` is not an jointCPUEmesh, you must provide `loc_xy`.", call. = FALSE)
   
   spde <- fmesher::fm_fem(m)
   A <- fmesher::fm_basis(m, loc = loc_xy)
@@ -64,5 +64,5 @@
     spde = spde,
     A = A,
     loc_centers = NULL
-  ), class = "intCPUEmesh")
+  ), class = "jointCPUEmesh")
 }

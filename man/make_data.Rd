@@ -2,30 +2,27 @@
 % Please edit documentation in R/make_data.R
 \name{make_data}
 \alias{make_data}
-\title{Prepare data objects and mesh for intCPUE workflows}
+\title{Prepare data objects and mesh for jointCPUE workflows}
 \usage{
-make_data(formula, data_utm, mesh, area_scale = "auto")
+make_data(data_utm, mesh, area_scale = "auto")
 }
 \arguments{
-\item{formula}{A model formula. Smooth terms must use s().}
-
 \item{data_utm}{A data.frame containing required columns (with utm_x/y_scale)}
 
-\item{mesh}{intCPUEmesh built from make_mesh(), or a custom mesh}
+\item{mesh}{jointCPUEmesh built from make_mesh(), or a custom mesh}
 
 \item{area_scale}{Numeric or "auto". Scaling factor for area_km2.}
 }
 \value{
-A list with elements mesh, data, key, scales, smooth_basis, smooth_info.
+A list with elements mesh, data, key, scales.
 }
 \description{
-Main data-prep function for intCPUE.
+Main data-prep function for jointCPUE.
 \itemize{
 \item mesh/SPDE/A matrices
 \item extrapolation key grid + areas
-\item parse smoothers (mgcv s()) into Xs/Zs
 }
 }
 \author{
-Rujia Bi \email{rbi@iattc.org}
+Rujia Bi \email{bikayla5@gmail.com}
 }

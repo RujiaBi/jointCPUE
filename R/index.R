@@ -1,9 +1,9 @@
-#' Get bias-corrected index and uncertainty from an intCPUE fit
+#' Get bias-corrected index and uncertainty from an jointCPUE fit
 #'
 #' Computes a bias-corrected index on the original scale using the "epsilon trick"
 #' (via eps_index) and returns log-scale SE from sdreport (ADREPORT(link_total)).
 #'
-#' @param object An object of class `intCPUE` returned by [intCPUE::intCPUE()].
+#' @param object An object of class `jointCPUE` returned by [jointCPUE::jointCPUE()].
 #' @param level Confidence level for intervals. Default 0.95.
 #' @param inner.control List passed to TMB::MakeADFun(inner.control=...).
 #'   Default uses sparse + lowrank for memory efficiency.
@@ -24,8 +24,8 @@ get_index <- function(
     inner.control = list(sparse = TRUE, lowrank = TRUE, trace = FALSE),
     silent = TRUE
 ) {
-  if (!inherits(object, "intCPUE")) {
-    stop("`object` must be an `intCPUE` fit from intCPUE().", call. = FALSE)
+  if (!inherits(object, "jointCPUE")) {
+    stop("`object` must be an `jointCPUE` fit from jointCPUE().", call. = FALSE)
   }
   
   # --- pull what we need from fit ---
@@ -120,4 +120,3 @@ get_index <- function(
   
   out
 }
-

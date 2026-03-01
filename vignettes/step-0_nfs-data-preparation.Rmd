@@ -1,0 +1,304 @@
+---
+title: "Preparing NPFC Neon Flying Squid Data"
+output:
+  rmarkdown::html_vignette:
+    toc: true
+    toc_depth: 2
+vignette: >
+  %\VignetteIndexEntry{Preparing NPFC Neon Flying Squid Data}
+  %\VignetteEncoding{UTF-8}
+  %\VignetteEngine{knitr::rmarkdown}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  eval = FALSE,
+  echo = TRUE,
+  warning = FALSE,
+  message = FALSE
+)
+```
+
+# Overview
+
+This vignette documents the data-preparation workflow I used for the NFS
+examples in `jointCPUE`.
+
+The workflow covers:
+
+- importing member-specific source files
+- standardizing columns into a common format
+- splitting Taiwan records by gear configuration
+- creating 0-based yearly and monthly indices
+- plotting fleet coverage in space and time
+- splitting the data at `170E`
+
+Replace the file paths and column positions as needed for your local data
+files. The column selections shown here are the ones I used for the current
+NFS files.
+
+# Load packages
+
+```{r}
+library(readxl)
+library(dplyr)
+library(ggplot2)
+library(maps)
+library(tidyr)
+```
+
+# Read raw files
+
+```{r}
+jpn <- read_excel(".../20251125Data sharing template NFS Japan (by Month and Grid)_2017-2024.xlsx")
+twn <- read_excel(".../1x1-degree catch and effort data NFS_CT.xlsx")
+rus <- read_excel(".../NFS_RUS_NW_ed1.xlsx")
+kor <- read_excel(".../Data sharing templete NFS up to 2025_KOR.xlsx")
+chn <- read.csv(".../CE_NFS_China_2005-2024_0.csv")
+```
+
+# Data notes
+
+- `JPN`: 2017-2024; machine jigging; January-February and April-December
+- `TWN`: mixed handline and machine-jigging records
+- `RUS`: drift-net; effort in vessel-days
+- `KOR`: gear type not clearly distinguished
+
+# Split Taiwan records by effort configuration
+
+```{r}
+twn <- twn %>%
+  mutate(
+    eff1 = suppressWarnings(as.numeric(`Effort number 1`)),
+    eff2 = suppressWarnings(as.numeric(`Effort number 2`))
+  )
+
+twn_hand <- twn %>% filter(!is.na(eff1), eff1 > 0, is.na(eff2) | eff2 == 0)
+twn_mac  <- twn %>% filter((is.na(eff1) | eff1 == 0), !is.na(eff2), eff2 > 0)
+twn_both <- twn %>% filter(!is.na(eff1), eff1 > 0, !is.na(eff2), eff2 > 0)
+twn_no   <- twn %>% filter((is.na(eff1) | eff1 == 0), is.na(eff2) | eff2 == 0)
+```
+
+# Remove known unusable records
+
+```{r}
+jpn <- jpn %>% filter(Area != "NW")
+```
+
+# Standardize member files
+
+```{r}
+parse_month <- function(x) {
+  x <- trimws(as.character(x))
+
+  dplyr::case_when(
+    x %in% c("1", "01", "January", "JAN", "Jan") ~ 1L,
+    x %in% c("2", "02", "February", "FEB", "Feb") ~ 2L,
+    x %in% c("3", "03", "March", "MAR", "Mar") ~ 3L,
+    x %in% c("4", "04", "April", "APR", "Apr") ~ 4L,
+    x %in% c("5", "05", "May", "MAY") ~ 5L,
+    x %in% c("6", "06", "June", "JUN", "Jun") ~ 6L,
+    x %in% c("7", "07", "July", "JUL", "Jul") ~ 7L,
+    x %in% c("8", "08", "August", "AUG", "Aug") ~ 8L,
+    x %in% c("9", "09", "September", "SEP", "Sep") ~ 9L,
+    x %in% c("10", "October", "OCT", "Oct") ~ 10L,
+    x %in% c("11", "November", "NOV", "Nov") ~ 11L,
+    x %in% c("12", "December", "DEC", "Dec") ~ 12L,
+    TRUE ~ NA_integer_
+  )
+}
+
+mk_dd <- function(dat, cols, fleet) {
+  out <- dat[, cols]
+  colnames(out) <- c(
+    "Member", "Year", "Month", "Latitude", "Longitude", "Longitude_EW",
+    "Effort_type", "Effort", "Catch"
+  )
+
+  out %>%
+    mutate(
+      Member = as.character(Member),
+      Year = as.integer(Year),
+      Month = parse_month(Month),
+      Latitude = as.numeric(Latitude),
+      Longitude = as.numeric(Longitude),
+      Longitude_EW = as.character(Longitude_EW),
+      Effort_type = as.character(Effort_type),
+      Effort = as.numeric(Effort),
+      Catch = as.numeric(Catch),
+      Fleet = fleet
+    )
+}
+```
+
+```{r}
+dd <- bind_rows(
+  mk_dd(chn,      c(1:3, 5:7, 10,  9, 12), "CHN"),
+  mk_dd(jpn,      c(1:3, 6:8, 13, 12, 14), "JPN"),
+  mk_dd(twn_hand, c(1:3, 5:7, 11, 12, 15), "TWN_hand"),
+  mk_dd(twn_mac,  c(1:3, 5:7, 13:15),      "TWN_machine"),
+  mk_dd(kor,      c(1:3, 5:7, 11:13),      "KOR"),
+  mk_dd(rus,      c(1:3, 5:7, 11:13),      "RUS")
+)
+```
+
+# Create analysis fields
+
+```{r}
+dd <- dd %>%
+  mutate(
+    X = if_else(Longitude_EW == "W", 360 - Longitude, Longitude),
+    Y = Latitude,
+    Fleet_code = case_when(
+      Fleet == "CHN" ~ 0L,
+      Fleet == "JPN" ~ 1L,
+      Fleet == "KOR" ~ 2L,
+      Fleet == "RUS" ~ 3L,
+      Fleet == "TWN_hand" ~ 4L,
+      Fleet == "TWN_machine" ~ 5L,
+      TRUE ~ NA_integer_
+    ),
+    Presence = if_else(Catch > 0, 1L, 0L),
+    CPUE = Catch / Effort
+  )
+```
+
+# Build 0-based observed-time indices
+
+These indices skip missing years and missing year-month combinations.
+
+```{r}
+year_lookup <- dd %>%
+  distinct(Year) %>%
+  arrange(Year) %>%
+  mutate(t_year = row_number() - 1L)
+
+month_lookup <- dd %>%
+  distinct(Year, Month) %>%
+  arrange(Year, Month) %>%
+  mutate(t_month = row_number() - 1L)
+
+dd <- dd %>%
+  select(-any_of(c("t_year", "t_month"))) %>%
+  left_join(year_lookup, by = "Year") %>%
+  left_join(month_lookup, by = c("Year", "Month"))
+```
+
+# Plot fleet coverage
+
+```{r}
+world <- map_data("world") %>%
+  mutate(long_360 = ifelse(long < 0, long + 360, long))
+
+x_rng <- range(dd$X, na.rm = TRUE)
+y_rng <- range(dd$Y, na.rm = TRUE)
+
+plot_spatial <- ggplot() +
+  geom_polygon(
+    data = world %>%
+      filter(
+        long_360 >= x_rng[1] - 5,
+        long_360 <= x_rng[2] + 5,
+        lat >= y_rng[1] - 3,
+        lat <= y_rng[2] + 3
+      ),
+    aes(x = long_360, y = lat, group = group),
+    fill = "grey85",
+    color = "grey50",
+    linewidth = 0.2
+  ) +
+  geom_point(
+    data = dd,
+    aes(x = X, y = Y, color = Fleet, shape = Fleet),
+    size = 2.5,
+    alpha = 0.8
+  ) +
+  coord_quickmap(
+    xlim = c(135, 235),
+    ylim = c(15, 52),
+    expand = FALSE
+  ) +
+  scale_x_continuous(
+    labels = function(x) ifelse(x <= 180, paste0(x, "E"), paste0(360 - x, "W"))
+  ) +
+  labs(x = "Longitude", y = "Latitude") +
+  theme_bw()
+```
+
+```{r}
+plot_temporal_coverage <- function(dat, month_lookup) {
+  plot_dat <- tidyr::expand_grid(
+    Fleet = unique(dat$Fleet),
+    t_month = month_lookup$t_month
+  ) %>%
+    left_join(month_lookup, by = "t_month") %>%
+    left_join(
+      dat %>%
+        distinct(Fleet, Year, Month) %>%
+        mutate(has_data = 1L),
+      by = c("Fleet", "Year", "Month")
+    ) %>%
+    mutate(fill_group = if_else(is.na(has_data), "No data", Fleet))
+
+  ggplot(plot_dat, aes(x = t_month, y = Fleet, fill = fill_group)) +
+    geom_tile(width = 0.85, height = 0.75, color = NA) +
+    scale_fill_manual(
+      values = c(
+        "No data" = "grey92",
+        "CHN" = "#C94C4C",
+        "JPN" = "#E76F51",
+        "KOR" = "#457B9D",
+        "RUS" = "#8D99AE",
+        "TWN_hand" = "#F4A261",
+        "TWN_machine" = "#2A9D8F"
+      )
+    ) +
+    scale_x_continuous(
+      breaks = month_lookup$t_month[month_lookup$Month == 1],
+      labels = month_lookup$Year[month_lookup$Month == 1]
+    ) +
+    labs(x = "Year-Month", y = NULL, fill = NULL) +
+    theme_bw() +
+    theme(
+      panel.grid = element_blank(),
+      axis.text.x = element_text(angle = 45, hjust = 1)
+    )
+}
+
+plot_temporal <- plot_temporal_coverage(dd, month_lookup)
+```
+
+# Split the data at 170E
+
+```{r}
+dd_left_170 <- dd %>% filter(X < 170)
+dd_right_170 <- dd %>% filter(X >= 170)
+```
+
+```{r}
+plot_temporal_left <- plot_temporal_coverage(dd_left_170, month_lookup)
+plot_temporal_right <- plot_temporal_coverage(dd_right_170, month_lookup)
+```
+
+# Save processed outputs
+
+```{r}
+save(
+  dd_left_170,
+  dd_right_170,
+  year_lookup,
+  month_lookup,
+  file = "NFS_jointCPUE_Data_split170E.RData"
+)
+```
+
+# Notes
+
+- `Fleet_code` is 0-based, with `CHN` used as the reference fleet.
+- `t_year` and `t_month` are also 0-based, and only observed time points are
+  indexed.
+- If you need full calendar time indices with gaps retained, build the lookup
+  tables from a complete year or year-month sequence instead of observed values
+  only.

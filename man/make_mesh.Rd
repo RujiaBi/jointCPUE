@@ -2,7 +2,7 @@
 % Please edit documentation in R/make_mesh.R
 \name{make_mesh}
 \alias{make_mesh}
-\title{Construct an SPDE mesh for intCPUE}
+\title{Construct an SPDE mesh for jointCPUE}
 \usage{
 make_mesh(
   data_utm,
@@ -43,7 +43,7 @@ and used as a boundary.}
 \code{cutoff}, \code{extend}, \code{refine}.}
 }
 \value{
-An object of class \code{intCPUEmesh} with elements \code{mesh}, \code{spde}, \code{A},
+An object of class \code{jointCPUEmesh} with elements \code{mesh}, \code{spde}, \code{A},
 \code{loc_xy}, \code{xy_cols}, and \code{loc_centers} (for kmeans).
 }
 \description{

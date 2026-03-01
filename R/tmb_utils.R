@@ -1,5 +1,5 @@
 # tmb-utils.R ---------------------------------------------------------------
-# Internal helpers for intCPUE TMB workflows.
+# Internal helpers for jointCPUE TMB workflows.
 # - ID recoding / sanity checks for 0-based consecutive indices
 # - map helpers for fixing parameters via TMB map
 # - small wrappers for optimization / debugging
@@ -46,7 +46,7 @@
   invisible(list(x = x_int, n = mx + 1L))
 }
 
-.check_fit_inputs_intCPUE <- function(data_tmb) {
+.check_fit_inputs_jointCPUE <- function(data_tmb) {
   # NOTE:
   # This is the single "gatekeeper" for fit().
   # If it passes, indices and core objects are consistent with what the C++ code expects.
@@ -54,10 +54,9 @@
   
   # ---- required fields ----
   req <- c(
-    "n_i","n_t","n_v","n_f",
-    "b_i","e_i","t_i","v_i","f_i",
-    "A_is","A_gs","spde",
-    "has_smooths","Xs","Zs"
+    "n_i","n_t","n_f",
+    "b_i","t_i","f_i",
+    "A_is","A_gs","spde"
   )
   miss <- setdiff(req, names(data_tmb))
   if (length(miss)) {
@@ -71,12 +70,6 @@
   # ---- basic type checks ----
   if (!is.numeric(data_tmb$b_i))
     stop("`b_i` must be numeric.", call. = FALSE)
-  
-  if (anyNA(data_tmb$e_i))
-    stop("`e_i` contains NA; encounter must be 0/1 with no NA.", call. = FALSE)
-  
-  if (!all(data_tmb$e_i %in% c(0L, 1L)))
-    stop("`e_i` must contain only 0/1.", call. = FALSE)
   
   # ---- index sanity checks ----
   check_index <- function(x, n, name) {
@@ -116,7 +109,6 @@
   }
   
   check_index(data_tmb$t_i, data_tmb$n_t, "t_i")
-  check_index(data_tmb$v_i, data_tmb$n_v, "v_i")
   check_index(data_tmb$f_i, data_tmb$n_f, "f_i")
   
   invisible(TRUE)
@@ -184,6 +176,26 @@
 }
 
 # ---- 4) Debug helpers ------------------------------------------------------
+
+#' Check Model Convergence
+#'
+#' Summarizes basic convergence diagnostics for a fitted `jointCPUE` model.
+#'
+#' @param object A fitted `jointCPUE` object.
+#'
+#' @return A one-row data.frame containing the optimizer convergence code,
+#'   convergence message, and maximum absolute gradient component at the
+#'   reported optimum.
+#' @export
+check_convergence <- function(object) {
+  stopifnot(inherits(object, "jointCPUE"))
+
+  data.frame(
+    convergence = object$opt$convergence,
+    message = object$opt$message,
+    max_grad = max(abs(object$obj$gr(object$opt$par)))
+  )
+}
 
 .get_parlist <- function(obj) {
   # NOTE:

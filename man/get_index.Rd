@@ -2,7 +2,7 @@
 % Please edit documentation in R/index.R
 \name{get_index}
 \alias{get_index}
-\title{Get bias-corrected index and uncertainty from an intCPUE fit}
+\title{Get bias-corrected index and uncertainty from an jointCPUE fit}
 \usage{
 get_index(
   object,
@@ -12,7 +12,7 @@ get_index(
 )
 }
 \arguments{
-\item{object}{An object of class \code{intCPUE} returned by \code{\link[=intCPUE]{intCPUE()}}.}
+\item{object}{An object of class \code{jointCPUE} returned by \code{\link[=jointCPUE]{jointCPUE()}}.}
 
 \item{level}{Confidence level for intervals. Default 0.95.}
 

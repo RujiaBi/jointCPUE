@@ -38,3 +38,19 @@
   k <- floor(log10(m))
   10^k
 }
+
+utils::globalVariables(c(
+  "effect",
+  "fleet",
+  "observed",
+  "panel",
+  "predicted",
+  "reference",
+  "time",
+  "utm_x_scale",
+  "utm_y_scale",
+  "value",
+  "x",
+  "y",
+  "z"
+))

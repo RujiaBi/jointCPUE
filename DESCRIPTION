@@ -1,23 +1,22 @@
-Package: intCPUE
+Package: jointCPUE
 Type: Package
-Title: Integrated Spatiotemporal CPUE Standardization via TMB
+Title: Joint Spatiotemporal CPUE Standardization Using TMB
 Version: 0.1.0
-Date: 2026-02-06
+Date: 2025-11-26
 Authors@R: 
-    person("Rujia", "Bi", , "rbi@iattc.org", role = c("aut", "cre"),
-           comment = c(ORCID = "0000-0002-1954-6797"))
-Description: Provides an integrated framework for catch-per-unit-effort (CPUE)
-    standardization using Template Model Builder (TMB). The model supports
-    joint analysis of multiple fisheries or surveys, spatiotemporal random
-    fields via SPDE, and optional correction for preferential sampling.
+    person("Rujia", "Bi", email = "bikayla5@gmail.com", role = c("aut", "cre"))
+Description: Provides a joint framework for catch-per-unit-effort (CPUE)
+    standardization using Template Model Builder (TMB). The package
+    supports joint analysis of multiple fleets and spatiotemporal random
+    fields via SPDE, with an initial application to neon flying squid in
+    the NPFC Convention Area.
 License: GPL-3
-Notice: inst/NOTICE
 Depends:
     R (>= 4.4.0)
 Imports:
+    ggplot2,
     Matrix,
     methods,
-    mgcv,
     stats,
     fmesher,
     TMB,
@@ -29,13 +28,12 @@ Suggests:
     knitr,
     rmarkdown,
     testthat (>= 3.0.0)
-VignetteBuilder:
-    knitr	
-URL: https://github.com/RujiaBi/intCPUE
-BugReports: https://github.com/RujiaBi/intCPUE/issues
+VignetteBuilder: knitr
+URL: https://github.com/RujiaBi/jointCPUE
+BugReports: https://github.com/RujiaBi/jointCPUE/issues
 ByteCompile: true
 Config/testthat/edition: 3
-Config/testthat/parallel: true
+Config/testthat/parallel: false
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
