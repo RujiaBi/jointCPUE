@@ -326,20 +326,32 @@ infer_cellsize_deg <- function(lon, lat, tol = 1e-6, force = c("auto", "mode", "
 #' @param combined_data Data after UTM scaling, containing lon/lat and utm_x_scale/utm_y_scale.
 #' @param mesh_fm A fmesher mesh object (not an intCPUEmesh wrapper).
 #' @param area_scale Numeric or "auto".
+#' @param extrapolation_grid Optional user-supplied extrapolation grid or key.
+#'   Must contain `utm_x_scale` and `utm_y_scale`, plus either `area_km2` or
+#'   enough information to compute area (`lon`/`lat`, or `lon_std`/`lat`).
 #' @param ... Passed to `calculate_area()` (e.g., cellsize, crs_equal_area, check_grid).
 #'
 #' @return list(key=..., area_scale_val=..., A_gs=...)
 #' @keywords internal
-.prep_key_area <- function(combined_data, mesh_fm, area_scale = "auto", ...) {
-  
-  lon_col <- if ("lon_std" %in% names(combined_data)) "lon_std" else "lon"
-  
-  dxy <- unique(combined_data[, c(lon_col, "lat", "utm_x_scale", "utm_y_scale")])
-  names(dxy)[names(dxy) == lon_col] <- "lon"
-  rownames(dxy) <- NULL
-  dxy$order <- seq_len(nrow(dxy))
-  
-  key <- calculate_area(dxy, lon_name = "lon", lat_name = "lat", ...)
+.prep_key_area <- function(
+    combined_data,
+    mesh_fm,
+    area_scale = "auto",
+    extrapolation_grid = NULL,
+    ...
+) {
+  dxy_out <- .prep_extrapolation_grid(combined_data, extrapolation_grid = extrapolation_grid)
+
+  if (dxy_out$has_area) {
+    key <- data.frame(
+      order = seq_len(nrow(dxy_out$grid)),
+      utm_x_scale = dxy_out$grid$utm_x_scale,
+      utm_y_scale = dxy_out$grid$utm_y_scale,
+      area_km2 = dxy_out$grid$area_km2
+    )
+  } else {
+    key <- calculate_area(dxy_out$grid, lon_name = "lon", lat_name = "lat", ...)
+  }
   
   if (!("area_km2" %in% names(key))) {
     stop("`calculate_area()` must return a column named `area_km2`.", call. = FALSE)
@@ -358,6 +370,94 @@ infer_cellsize_deg <- function(lon, lat, tol = 1e-6, force = c("auto", "mode", "
   A_gs <- fmesher::fm_basis(mesh_fm, loc = as.matrix(key[, c("utm_x_scale", "utm_y_scale")]))
   
   list(key = key, area_scale_val = area_scale_val, A_gs = A_gs)
+}
+
+.prep_extrapolation_grid <- function(combined_data, extrapolation_grid = NULL) {
+  if (is.null(extrapolation_grid)) {
+    lon_col <- if ("lon_std" %in% names(combined_data)) "lon_std" else "lon"
+
+    dxy <- unique(combined_data[, c(lon_col, "lat", "utm_x_scale", "utm_y_scale"), drop = FALSE])
+    names(dxy)[names(dxy) == lon_col] <- "lon"
+    rownames(dxy) <- NULL
+    dxy$order <- seq_len(nrow(dxy))
+
+    return(list(grid = dxy, has_area = FALSE))
+  }
+
+  grid <- as.data.frame(extrapolation_grid)
+
+  if (!nrow(grid)) {
+    stop("`extrapolation_grid` must have at least one row.", call. = FALSE)
+  }
+
+  .check_required_cols(grid, c("utm_x_scale", "utm_y_scale"))
+  .check_numeric(grid, c("utm_x_scale", "utm_y_scale"))
+
+  if (anyNA(grid$utm_x_scale) || anyNA(grid$utm_y_scale) ||
+      any(!is.finite(grid$utm_x_scale)) || any(!is.finite(grid$utm_y_scale))) {
+    stop("`extrapolation_grid` coordinates must be finite and must not contain NA.", call. = FALSE)
+  }
+
+  if ("area_km2" %in% names(grid)) {
+    .check_numeric(grid, "area_km2")
+
+    if (anyNA(grid$area_km2) || any(!is.finite(grid$area_km2)) || any(grid$area_km2 <= 0)) {
+      stop("`extrapolation_grid$area_km2` must be strictly positive and finite.", call. = FALSE)
+    }
+
+    key <- unique(grid[, c("utm_x_scale", "utm_y_scale", "area_km2"), drop = FALSE])
+    rownames(key) <- NULL
+
+    if (anyDuplicated(key[, c("utm_x_scale", "utm_y_scale"), drop = FALSE])) {
+      stop(
+        paste0(
+          "`extrapolation_grid` has duplicated `utm_x_scale`/`utm_y_scale` rows ",
+          "with conflicting `area_km2` values."
+        ),
+        call. = FALSE
+      )
+    }
+
+    return(list(grid = key, has_area = TRUE))
+  }
+
+  lon_col <- c("lon", "lon_std")
+  lon_col <- lon_col[lon_col %in% names(grid)][1]
+
+  if (is.na(lon_col) || is.null(lon_col) || !("lat" %in% names(grid))) {
+    stop(
+      paste0(
+        "`extrapolation_grid` must contain either `area_km2` or ",
+        "`lon`/`lat` (or `lon_std`/`lat`) in addition to `utm_x_scale`/`utm_y_scale`."
+      ),
+      call. = FALSE
+    )
+  }
+
+  .check_numeric(grid, c(lon_col, "lat"))
+
+  if (anyNA(grid[[lon_col]]) || anyNA(grid$lat) ||
+      any(!is.finite(grid[[lon_col]])) || any(!is.finite(grid$lat))) {
+    stop("`extrapolation_grid` lon/lat values must be finite and must not contain NA.", call. = FALSE)
+  }
+
+  dxy <- unique(grid[, c(lon_col, "lat", "utm_x_scale", "utm_y_scale"), drop = FALSE])
+  names(dxy)[names(dxy) == lon_col] <- "lon"
+  rownames(dxy) <- NULL
+
+  if (anyDuplicated(dxy[, c("utm_x_scale", "utm_y_scale"), drop = FALSE])) {
+    stop(
+      paste0(
+        "`extrapolation_grid` has duplicated `utm_x_scale`/`utm_y_scale` rows ",
+        "with conflicting lon/lat values."
+      ),
+      call. = FALSE
+    )
+  }
+
+  dxy$order <- seq_len(nrow(dxy))
+
+  list(grid = dxy, has_area = FALSE)
 }
 
 # ---- internal: quantized numeric key for floating coordinates ----

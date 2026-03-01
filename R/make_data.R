@@ -16,6 +16,12 @@
 #'   sum-to-zero constraint over observed month levels, enters the observation
 #'   model only, and is excluded from the standardized index. When
 #'   `index = "monthly"`, the month effect is always disabled.
+#' @param extrapolation_grid Optional data.frame defining the extrapolation
+#'   grid/key shared across fits. Use this to force joint and single-fleet
+#'   models onto the same spatial integration domain. If `NULL`, the grid is
+#'   built automatically from unique observed locations in `data_utm`. Supplied
+#'   grids must contain `utm_x_scale` and `utm_y_scale`, plus either `area_km2`
+#'   or enough information to compute area (`lon`/`lat`, or `lon_std`/`lat`).
 #'
 #' @return A list with elements `data`, `key`, `scales`, and `time`.
 #' @author Rujia Bi \email{bikayla5@gmail.com}
@@ -26,7 +32,8 @@ make_data <- function(
     area_scale = "auto",
     index = c("monthly", "yearly"),
     month_col = NULL,
-    month_diffs = c("on", "off")
+    month_diffs = c("on", "off"),
+    extrapolation_grid = NULL
 ) {
   index <- match.arg(index)
   month_diffs <- match.arg(month_diffs)
@@ -86,7 +93,12 @@ make_data <- function(
   Ais_x  <- A_isT@x
   
   # ---- key/extrapolation grid ----
-  key_out <- .prep_key_area(data_utm, mesh, area_scale = area_scale)
+  key_out <- .prep_key_area(
+    data_utm,
+    mesh,
+    area_scale = area_scale,
+    extrapolation_grid = extrapolation_grid
+  )
   key <- key_out$key
   A_gs <- key_out$A_gs
   

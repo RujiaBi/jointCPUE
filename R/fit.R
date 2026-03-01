@@ -40,6 +40,11 @@ NULL
 #' @param obs_sd Either `"shared"` or `"fleet"`. Controls the observation-error
 #'   standard deviation in the lognormal likelihood. `"shared"` uses a single
 #'   SD across all fleets. `"fleet"` estimates one SD per fleet.
+#' @param extrapolation_grid Optional data.frame defining a common
+#'   extrapolation grid/key across fits. Use this when comparing joint and
+#'   single-fleet models on the same spatial integration domain. The supplied
+#'   object must contain `utm_x_scale` and `utm_y_scale`, plus either `area_km2`
+#'   or enough information to compute area (`lon`/`lat`, or `lon_std`/`lat`).
 #' @param control Control list passed to [stats::nlminb()].
 #' @param ncores Optional integer. If provided, sets the number of OpenMP threads. Passed to [TMB::openmp()].
 #' @param silent Logical. Passed to [TMB::MakeADFun()].
@@ -64,6 +69,7 @@ jointCPUE <- function(
     month_col = NULL,
     month_diffs = c("on", "off"),
     obs_sd = c("shared", "fleet"),
+    extrapolation_grid = NULL,
     silent = FALSE
 ) {
   pop_spatial <- match.arg(pop_spatial)
@@ -86,6 +92,7 @@ jointCPUE <- function(
     index = index,
     month_col = month_col,
     month_diffs = month_diffs,
+    extrapolation_grid = extrapolation_grid,
     ...
   )
   
@@ -200,6 +207,7 @@ jointCPUE <- function(
       index = index,
       month_diffs = month_diffs,
       obs_sd = obs_sd,
+      extrapolation_grid_supplied = !is.null(extrapolation_grid),
       month_col = prep$time$month_col,
       month_values = prep$time$month_values,
       DLL = DLL,
