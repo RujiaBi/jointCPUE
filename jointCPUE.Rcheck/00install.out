@@ -1,0 +1,44 @@
+* installing *source* package 'jointCPUE' ...
+** using staged installation
+** libs
+using C++ compiler: 'Apple clang version 14.0.3 (clang-1403.0.22.14.1)'
+using SDK: 'MacOSX13.3.sdk'
+clang++ -arch arm64 -std=gnu++17 -I"/Library/Frameworks/R.framework/Resources/include" -DNDEBUG -DTMBAD_FRAMEWORK -I'/Library/Frameworks/R.framework/Versions/4.4-arm64/Resources/library/RcppEigen/include' -I'/Library/Frameworks/R.framework/Versions/4.4-arm64/Resources/library/TMB/include' -I/opt/R/arm64/include    -fPIC  -falign-functions=64 -Wall -g -O2   -c jointCPUE.cpp -o jointCPUE.o
+In file included from jointCPUE.cpp:3:
+In file included from /Library/Frameworks/R.framework/Versions/4.4-arm64/Resources/library/TMB/include/TMB.hpp:96:
+In file included from /Library/Frameworks/R.framework/Versions/4.4-arm64/Resources/library/RcppEigen/include/Eigen/Sparse:26:
+In file included from /Library/Frameworks/R.framework/Versions/4.4-arm64/Resources/library/RcppEigen/include/Eigen/SparseCore:61:
+/Library/Frameworks/R.framework/Versions/4.4-arm64/Resources/library/RcppEigen/include/Eigen/src/SparseCore/TriangularSolver.h:273:13: warning: variable 'count' set but not used [-Wunused-but-set-variable]
+      Index count = 0;
+            ^
+In file included from jointCPUE.cpp:3:
+In file included from /Library/Frameworks/R.framework/Versions/4.4-arm64/Resources/library/TMB/include/TMB.hpp:96:
+In file included from /Library/Frameworks/R.framework/Versions/4.4-arm64/Resources/library/RcppEigen/include/Eigen/Sparse:29:
+In file included from /Library/Frameworks/R.framework/Versions/4.4-arm64/Resources/library/RcppEigen/include/Eigen/SparseLU:35:
+/Library/Frameworks/R.framework/Versions/4.4-arm64/Resources/library/RcppEigen/include/Eigen/src/SparseLU/SparseLU_heap_relax_snode.h:78:9: warning: variable 'nsuper_et_post' set but not used [-Wunused-but-set-variable]
+  Index nsuper_et_post = 0; // Number of relaxed snodes in postordered etree 
+        ^
+/Library/Frameworks/R.framework/Versions/4.4-arm64/Resources/library/RcppEigen/include/Eigen/src/SparseLU/SparseLU_heap_relax_snode.h:79:9: warning: variable 'nsuper_et' set but not used [-Wunused-but-set-variable]
+  Index nsuper_et = 0; // Number of relaxed snodes in the original etree 
+        ^
+In file included from jointCPUE.cpp:3:
+In file included from /Library/Frameworks/R.framework/Versions/4.4-arm64/Resources/library/TMB/include/TMB.hpp:137:
+/Library/Frameworks/R.framework/Versions/4.4-arm64/Resources/library/TMB/include/TMBad/TMBad.cpp:3110:52: warning: all paths through this function will call itself [-Winfinite-recursion]
+ad_adapt F(const ad_adapt &x1, const ad_adapt &x2) {
+                                                   ^
+4 warnings generated.
+clang++ -arch arm64 -std=gnu++17 -dynamiclib -Wl,-headerpad_max_install_names -undefined dynamic_lookup -L/Library/Frameworks/R.framework/Resources/lib -L/opt/R/arm64/lib -o jointCPUE.so jointCPUE.o -F/Library/Frameworks/R.framework/.. -framework R -Wl,-framework -Wl,CoreFoundation
+installing to /Users/rujiabi/Documents/New project/jointCPUE/jointCPUE.Rcheck/00LOCK-jointCPUE/00new/jointCPUE/libs
+** R
+** inst
+** byte-compile and prepare package for lazy loading
+** help
+*** installing help indices
+*** copying figures
+** building package indices
+** installing vignettes
+** testing if installed package can be loaded from temporary location
+** checking absolute paths in shared objects and dynamic libraries
+** testing if installed package can be loaded from final location
+** testing if installed package keeps a record of temporary installation path
+* DONE (jointCPUE)

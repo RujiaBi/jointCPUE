@@ -1,0 +1,371 @@
+---
+title: "NFS Left of 170E: Yearly CPUE Workflow"
+output:
+  rmarkdown::html_vignette:
+    toc: true
+    toc_depth: 2
+vignette: >
+  %\VignetteIndexEntry{NFS Left of 170E: Yearly CPUE Workflow}
+  %\VignetteEncoding{UTF-8}
+  %\VignetteEngine{knitr::rmarkdown}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  eval = FALSE,
+  echo = TRUE,
+  warning = FALSE,
+  message = FALSE
+)
+```
+
+# Overview
+
+This vignette documents the yearly CPUE workflow for the NFS data west of
+`170E`.
+
+The workflow is:
+
+- loading the processed `170E` split dataset
+- fitting a sequence of increasingly complex yearly models
+- computing marginal AIC values
+- extracting standardized indices
+- checking fitted values and residual patterns
+- plotting fleet catchability differences when enabled
+
+The code below provides a reproducible workflow. File paths and model settings
+should be modified for local use.
+
+# Load package and processed data
+
+```{r}
+library(jointCPUE)
+
+load("NFS_jointCPUE_Data_split170E.RData")
+
+## Use the region west of 170E
+dd <- dd_left_170
+```
+
+# Prepare model input
+
+```{r}
+data_input <- data.frame(
+  cpue = dd$CPUE + 1e-05,
+  lon = dd$X,
+  lat = dd$Y,
+  month = dd$Month,
+  tid = as.numeric(as.factor(dd$t_year)) - 1,
+  fleetid = dd$Fleet_code
+)
+```
+
+```{r}
+utm <- make_utm(data_input, utm_zone = NULL, coord_scale = "auto")
+data_utm <- utm$data_utm
+```
+
+```{r}
+mesh <- make_mesh(
+  data_utm,
+  xy_cols = c("utm_x_scale", "utm_y_scale"),
+  type = "cutoff",
+  cutoff = 0.5
+)
+
+plot(mesh)
+```
+
+```{r}
+ncores <- 32
+```
+
+# Model 1: Fleet systematic differences only
+
+```{r}
+fit_1 <- jointCPUE(
+  data_utm = data_utm,
+  mesh = mesh,
+  index = "yearly",
+  pop_spatial = "off",
+  pop_spatiotemporal = "off",
+  q_diffs_system = "on",
+  q_diffs_time = "off",
+  q_diffs_spatial = "off",
+  ncores = ncores
+)
+```
+
+```{r}
+check_convergence(fit_1)
+```
+
+```{r}
+calc_marginal_aic(fit_1)
+
+index_1 <- get_index(fit_1)
+plot_index(index_1, time_values = year_lookup_left_170$Year, time_positions = year_lookup_left_170$Year)
+```
+
+```{r}
+pred_1 <- get_predicted(
+  fit_1,
+  data = data_utm,
+  drop_floor = TRUE,
+  floor_value = 1e-5
+)
+
+plots_1 <- plot_residuals(
+  pred_1,
+  observed_col = "cpue",
+  x_col = "utm_x_scale",
+  y_col = "utm_y_scale",
+  residual = "log",
+  bins = 40
+)
+
+plots_1$observed_predicted
+plots_1$spatial_residual
+```
+
+# Model 2: Add population spatial field
+
+```{r}
+fit_2 <- jointCPUE(
+  data_utm = data_utm,
+  mesh = mesh,
+  index = "yearly",
+  pop_spatial = "on",
+  pop_spatiotemporal = "off",
+  q_diffs_system = "on",
+  q_diffs_time = "off",
+  q_diffs_spatial = "off",
+  ncores = ncores
+)
+```
+
+```{r}
+check_convergence(fit_2)
+```
+
+```{r}
+calc_marginal_aic(fit_2)
+
+index_2 <- get_index(fit_2)
+plot_index(index_2, time_values = year_lookup_left_170$Year, time_positions = year_lookup_left_170$Year)
+```
+
+```{r}
+pred_2 <- get_predicted(
+  fit_2,
+  data = data_utm,
+  drop_floor = TRUE,
+  floor_value = 1e-5
+)
+
+plots_2 <- plot_residuals(
+  pred_2,
+  observed_col = "cpue",
+  x_col = "utm_x_scale",
+  y_col = "utm_y_scale",
+  residual = "log",
+  bins = 40
+)
+
+plots_2$observed_predicted
+plots_2$spatial_residual
+```
+
+# Model 3: Add iid spatiotemporal field
+
+```{r}
+fit_3 <- jointCPUE(
+  data_utm = data_utm,
+  mesh = mesh,
+  index = "yearly",
+  pop_spatial = "on",
+  pop_spatiotemporal = "on",
+  pop_spatiotemporal_type = "iid",
+  q_diffs_system = "on",
+  q_diffs_time = "off",
+  q_diffs_spatial = "off",
+  ncores = ncores
+)
+```
+
+```{r}
+check_convergence(fit_3)
+```
+
+```{r}
+calc_marginal_aic(fit_3)
+
+index_3 <- get_index(fit_3)
+plot_index(index_3, time_values = year_lookup_left_170$Year, time_positions = year_lookup_left_170$Year)
+```
+
+```{r}
+pred_3 <- get_predicted(
+  fit_3,
+  data = data_utm,
+  drop_floor = TRUE,
+  floor_value = 1e-5
+)
+
+plots_3 <- plot_residuals(
+  pred_3,
+  observed_col = "cpue",
+  x_col = "utm_x_scale",
+  y_col = "utm_y_scale",
+  residual = "log",
+  bins = 40
+)
+
+plots_3$observed_predicted
+plots_3$spatial_residual
+```
+
+# Model 4: Use RW spatiotemporal field
+
+This model may fit more slowly because the population spatiotemporal field is
+modeled as a first-order random walk through time.
+
+```{r}
+fit_4 <- jointCPUE(
+  data_utm = data_utm,
+  mesh = mesh,
+  index = "yearly",
+  pop_spatial = "on",
+  pop_spatiotemporal = "on",
+  pop_spatiotemporal_type = "rw",
+  q_diffs_system = "on",
+  q_diffs_time = "off",
+  q_diffs_spatial = "off",
+  ncores = ncores
+)
+```
+
+```{r}
+check_convergence(fit_4)
+```
+
+```{r}
+calc_marginal_aic(fit_4)
+
+index_4 <- get_index(fit_4)
+plot_index(index_4, time_values = year_lookup_left_170$Year, time_positions = year_lookup_left_170$Year)
+```
+
+```{r}
+pred_4 <- get_predicted(
+  fit_4,
+  data = data_utm,
+  drop_floor = TRUE,
+  floor_value = 1e-5
+)
+
+plots_4 <- plot_residuals(
+  pred_4,
+  observed_col = "cpue",
+  x_col = "utm_x_scale",
+  y_col = "utm_y_scale",
+  residual = "log",
+  bins = 40
+)
+
+plots_4$observed_predicted
+plots_4$spatial_residual
+```
+
+# Model 5: Add fleet-specific spatial differences
+
+```{r}
+fit_5 <- jointCPUE(
+  data_utm = data_utm,
+  mesh = mesh,
+  index = "yearly",
+  pop_spatial = "on",
+  pop_spatiotemporal = "on",
+  pop_spatiotemporal_type = "rw",
+  q_diffs_system = "on",
+  q_diffs_time = "off",
+  q_diffs_spatial = "on",
+  ncores = ncores
+)
+```
+
+```{r}
+check_convergence(fit_5)
+```
+
+```{r}
+calc_marginal_aic(fit_5)
+
+index_5 <- get_index(fit_5)
+plot_index(index_5, time_values = year_lookup_left_170$Year, time_positions = year_lookup_left_170$Year)
+```
+
+```{r}
+pred_5 <- get_predicted(
+  fit_5,
+  data = data_utm,
+  drop_floor = TRUE,
+  floor_value = 1e-5
+)
+
+plots_5 <- plot_residuals(
+  pred_5,
+  observed_col = "cpue",
+  x_col = "utm_x_scale",
+  y_col = "utm_y_scale",
+  residual = "log",
+  bins = 40
+)
+
+plots_5$observed_predicted
+plots_5$spatial_residual
+```
+
+# Plot fleet catchability differences
+
+```{r}
+fleet_labels <- c("CHN", "JPN", "KOR", "RUS", "TWN_hand", "TWN_machine")
+```
+
+```{r}
+plot_q_diffs_system(
+  fit_5,
+  fleet_labels = fleet_labels
+)
+```
+
+```{r}
+plot_q_diffs_spatial(
+  fit_5,
+  fleet_labels = fleet_labels
+)
+```
+
+If you fit a model with `q_diffs_time = "on"`, yearly fleet-specific temporal
+deviations can be plotted as follows:
+
+```{r}
+plot_q_diffs_time(
+  fit_time,
+  fleet_labels = fleet_labels,
+  time_values = year_lookup_left_170$Year
+)
+```
+
+# Notes
+
+- The left-of-`170E` analysis is based on `dd_left_170`.
+- The response is modeled as `CPUE + 1e-5` to avoid zero values in the
+  lognormal likelihood.
+- Residual plots are shown after removing the artificial floor value with
+  `drop_floor = TRUE`.
+- `plot_index()` is called with both `time_values` and `time_positions` set to
+  `year_lookup_left_170` so that the left-of-`170E` yearly index is shown on
+  the observed calendar-year scale.

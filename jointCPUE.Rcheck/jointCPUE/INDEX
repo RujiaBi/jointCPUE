@@ -1,0 +1,26 @@
+calc_marginal_aic       Calculate marginal AIC
+calculate_area          Calculate equal-area size (km^2) for each
+                        lon/lat grid cell
+check_convergence       Check Model Convergence
+get_fitted              Get observation-level fitted values and
+                        residuals
+get_index               Get bias-corrected index and uncertainty from
+                        an jointCPUE fit
+get_month_diffs         Extract month fixed effects
+get_predicted           Get observation-level predicted values and
+                        residuals
+get_q_diffs             Extract q-difference components
+jointCPUE               Fit an integrated spatiotemporal CPUE
+                        standardization model
+make_data               Prepare data objects and mesh for jointCPUE
+                        workflows
+make_mesh               Construct an SPDE mesh for jointCPUE
+make_utm                Convert lon/lat to UTM coordinates with robust
+                        longitude handling
+plot.jointCPUEmesh      Plot a jointCPUE mesh
+plot_index              Plot standardized CPUE index and CV
+plot_month_diffs        Plot month fixed effects
+plot_q_diffs_spatial    Plot spatial q-differences
+plot_q_diffs_system     Plot systematic q-differences
+plot_q_diffs_time       Plot temporal q-differences
+plot_residuals          Plot residual diagnostics

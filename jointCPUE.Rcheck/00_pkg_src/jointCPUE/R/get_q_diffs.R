@@ -45,12 +45,12 @@ get_q_diffs <- function(object, fleet_labels = NULL, time_values = NULL) {
   if (is.null(par_best)) {
     stop("Could not find `last.par.best` in fitted object.", call. = FALSE)
   }
-  parhat <- object$obj$env$parList(par_best)
+  rep_obj <- object$obj$report(par_best)
 
   out <- list(system = NULL, time = NULL, spatial = NULL)
 
   if (identical(object$settings$q_diffs_system, "on") && n_f > 1L) {
-    effect <- c(0, parhat$fleet_f)
+    effect <- c(0, rep_obj$fleet_f)
     out$system <- data.frame(
       fleetid = 0:(n_f - 1L),
       fleet = fleet_labels,
@@ -61,7 +61,7 @@ get_q_diffs <- function(object, fleet_labels = NULL, time_values = NULL) {
 
   if (identical(object$settings$q_diffs_time, "on") && n_f > 1L) {
     has_tf <- object$data_tmb$has_tf > 0L
-    fleet_t <- parhat$fleet_t
+    fleet_t <- rep_obj$fleet_t
     centered <- fleet_t
 
     for (j in seq_len(ncol(fleet_t))) {
@@ -91,7 +91,7 @@ get_q_diffs <- function(object, fleet_labels = NULL, time_values = NULL) {
 
   if (identical(object$settings$q_diffs_spatial, "on") && n_f > 1L) {
     key <- object$prep$key
-    proj <- as.matrix(object$data_tmb$A_gs %*% parhat$fleet_s)
+    proj <- as.matrix(object$data_tmb$A_gs %*% rep_obj$fleet_s)
 
     spatial_list <- vector("list", n_f - 1L)
     for (j in seq_len(n_f - 1L)) {

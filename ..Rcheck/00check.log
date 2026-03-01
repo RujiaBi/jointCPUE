@@ -1,0 +1,59 @@
+* using log directory '/Users/rujiabi/Documents/New project/jointCPUE/..Rcheck'
+* using R version 4.4.2 (2024-10-31)
+* using platform: aarch64-apple-darwin20
+* R was compiled by
+    Apple clang version 14.0.0 (clang-1400.0.29.202)
+    GNU Fortran (GCC) 12.2.0
+* running under: macOS Sonoma 14.2.1
+* using session charset: ASCII
+* using option '--no-manual'
+* checking for file './DESCRIPTION' ... OK
+* checking extension type ... Package
+* this is package 'jointCPUE' version '0.1.0'
+* package encoding: UTF-8
+* checking package namespace information ... OK
+* checking package dependencies ... OK
+* checking if this is a source package ... WARNING
+Subdirectory 'jointCPUE/src' contains apparent object files/libraries
+  jointCPUE.o jointCPUE.so
+Object files/libraries should not be included in a source package.
+* checking if there is a namespace ... OK
+* checking for executable files ... OK
+* checking for hidden files and directories ... NOTE
+Found the following hidden files and directories:
+  .DS_Store
+  .gitignore
+  vignettes/.gitignore
+  ..Rcheck
+  .Rproj.user
+  .git
+  .github
+These were most likely included in error. See section 'Package
+structure' in the 'Writing R Extensions' manual.
+* checking for portable file names ... OK
+* checking for sufficient/correct file permissions ... OK
+* checking whether package 'jointCPUE' can be installed ... OK
+* used C++ compiler: 'Apple clang version 14.0.3 (clang-1403.0.22.14.1)'
+* used SDK: 'MacOSX13.3.sdk'
+* checking installed package size ... NOTE
+  installed size is 24.8Mb
+  sub-directories of 1Mb or more:
+    help   2.0Mb
+    libs  22.6Mb
+* checking package directory ... OK
+* checking DESCRIPTION meta-information ... WARNING
+During startup - Warning messages:
+1: Setting LC_CTYPE failed, using "C" 
+2: Setting LC_COLLATE failed, using "C" 
+3: Setting LC_TIME failed, using "C" 
+4: Setting LC_MESSAGES failed, using "C" 
+5: Setting LC_MONETARY failed, using "C" 
+ ERROR
+During startup - Warning messages:
+1: Setting LC_CTYPE failed, using "C" 
+2: Setting LC_COLLATE failed, using "C" 
+3: Setting LC_TIME failed, using "C" 
+4: Setting LC_MESSAGES failed, using "C" 
+5: Setting LC_MONETARY failed, using "C" 
+* DONE
+Status: 1 ERROR, 2 WARNINGs, 2 NOTEs

@@ -1,0 +1,32 @@
+Package: jointCPUE
+Type: Package
+Title: Joint Spatiotemporal CPUE Standardization Using TMB
+Version: 0.1.0
+Date: 2025-11-26
+Authors@R: 
+    person("Rujia", "Bi", email = "bikayla5@gmail.com", role = c("aut", "cre"))
+Author: Rujia Bi [aut, cre]
+Maintainer: Rujia Bi <bikayla5@gmail.com>
+Description: Provides a joint framework for catch-per-unit-effort (CPUE)
+    standardization using Template Model Builder (TMB). The package
+    supports joint analysis of multiple fleets and spatiotemporal random
+    fields via SPDE, with an initial application to neon flying squid in
+    the NPFC Convention Area.
+License: GPL-3
+Depends: R (>= 4.4.0)
+Imports: ggplot2, Matrix, methods, stats, fmesher, TMB, sf
+LinkingTo: RcppEigen, TMB
+Suggests: knitr, rmarkdown, testthat (>= 3.0.0)
+VignetteBuilder: knitr
+URL: https://github.com/RujiaBi/jointCPUE
+BugReports: https://github.com/RujiaBi/jointCPUE/issues
+ByteCompile: true
+Config/testthat/edition: 3
+Config/testthat/parallel: false
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.3
+SystemRequirements: GNU make
+NeedsCompilation: yes
+Packaged: 2026-03-01 06:00:06 UTC; rujiabi
+Built: R 4.4.2; aarch64-apple-darwin20; 2026-03-01 06:00:10 UTC; unix

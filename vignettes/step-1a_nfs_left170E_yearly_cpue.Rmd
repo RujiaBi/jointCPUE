@@ -23,8 +23,8 @@ knitr::opts_chunk$set(
 
 # Overview
 
-This vignette documents the yearly CPUE workflow I used for the NFS data west
-of `170E`.
+This vignette documents the yearly CPUE workflow for the NFS data west of
+`170E`.
 
 The workflow is:
 
@@ -35,8 +35,8 @@ The workflow is:
 - checking fitted values and residual patterns
 - plotting fleet catchability differences when enabled
 
-Use the code below as a working template and change the file paths and model
-settings as needed.
+The code below provides a reproducible workflow. File paths and model settings
+should be modified for local use.
 
 # Load package and processed data
 
@@ -56,7 +56,8 @@ data_input <- data.frame(
   cpue = dd$CPUE + 1e-05,
   lon = dd$X,
   lat = dd$Y,
-  tid = as.numeric(as.factor(dd$t_year)) - 1,
+  month = dd$Month,
+  tid = dd$t_year,
   fleetid = dd$Fleet_code
 )
 ```
@@ -87,6 +88,8 @@ ncores <- 32
 fit_1 <- jointCPUE(
   data_utm = data_utm,
   mesh = mesh,
+  index = "yearly",
+  month_diffs = "on",
   pop_spatial = "off",
   pop_spatiotemporal = "off",
   q_diffs_system = "on",
@@ -104,7 +107,7 @@ check_convergence(fit_1)
 calc_marginal_aic(fit_1)
 
 index_1 <- get_index(fit_1)
-plot_index(index_1, time_values = year_lookup$Year, time_positions = year_lookup$Year)
+plot_index(index_1, time_values = year_lookup_left_170$Year, time_positions = year_lookup_left_170$Year)
 ```
 
 ```{r}
@@ -134,6 +137,8 @@ plots_1$spatial_residual
 fit_2 <- jointCPUE(
   data_utm = data_utm,
   mesh = mesh,
+  index = "yearly",
+  month_diffs = "on",
   pop_spatial = "on",
   pop_spatiotemporal = "off",
   q_diffs_system = "on",
@@ -151,7 +156,7 @@ check_convergence(fit_2)
 calc_marginal_aic(fit_2)
 
 index_2 <- get_index(fit_2)
-plot_index(index_2, time_values = year_lookup$Year, time_positions = year_lookup$Year)
+plot_index(index_2, time_values = year_lookup_left_170$Year, time_positions = year_lookup_left_170$Year)
 ```
 
 ```{r}
@@ -181,6 +186,8 @@ plots_2$spatial_residual
 fit_3 <- jointCPUE(
   data_utm = data_utm,
   mesh = mesh,
+  index = "yearly",
+  month_diffs = "on",
   pop_spatial = "on",
   pop_spatiotemporal = "on",
   pop_spatiotemporal_type = "iid",
@@ -199,7 +206,7 @@ check_convergence(fit_3)
 calc_marginal_aic(fit_3)
 
 index_3 <- get_index(fit_3)
-plot_index(index_3, time_values = year_lookup$Year, time_positions = year_lookup$Year)
+plot_index(index_3, time_values = year_lookup_left_170$Year, time_positions = year_lookup_left_170$Year)
 ```
 
 ```{r}
@@ -232,6 +239,8 @@ modeled as a first-order random walk through time.
 fit_4 <- jointCPUE(
   data_utm = data_utm,
   mesh = mesh,
+  index = "yearly",
+  month_diffs = "on",
   pop_spatial = "on",
   pop_spatiotemporal = "on",
   pop_spatiotemporal_type = "rw",
@@ -250,7 +259,7 @@ check_convergence(fit_4)
 calc_marginal_aic(fit_4)
 
 index_4 <- get_index(fit_4)
-plot_index(index_4, time_values = year_lookup$Year, time_positions = year_lookup$Year)
+plot_index(index_4, time_values = year_lookup_left_170$Year, time_positions = year_lookup_left_170$Year)
 ```
 
 ```{r}
@@ -280,6 +289,8 @@ plots_4$spatial_residual
 fit_5 <- jointCPUE(
   data_utm = data_utm,
   mesh = mesh,
+  index = "yearly",
+  month_diffs = "on",
   pop_spatial = "on",
   pop_spatiotemporal = "on",
   pop_spatiotemporal_type = "rw",
@@ -298,7 +309,7 @@ check_convergence(fit_5)
 calc_marginal_aic(fit_5)
 
 index_5 <- get_index(fit_5)
-plot_index(index_5, time_values = year_lookup$Year, time_positions = year_lookup$Year)
+plot_index(index_5, time_values = year_lookup_left_170$Year, time_positions = year_lookup_left_170$Year)
 ```
 
 ```{r}
@@ -349,7 +360,7 @@ deviations can be plotted as follows:
 plot_q_diffs_time(
   fit_time,
   fleet_labels = fleet_labels,
-  time_values = year_lookup$Year
+  time_values = year_lookup_left_170$Year
 )
 ```
 
@@ -361,5 +372,5 @@ plot_q_diffs_time(
 - Residual plots are shown after removing the artificial floor value with
   `drop_floor = TRUE`.
 - `plot_index()` is called with both `time_values` and `time_positions` set to
-  calendar years so that missing years appear as gaps on the x-axis rather than
-  being compressed out.
+  `year_lookup_left_170` so that the left-of-`170E` yearly index is shown on
+  the observed calendar-year scale.

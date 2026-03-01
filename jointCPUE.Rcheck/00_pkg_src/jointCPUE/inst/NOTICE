@@ -1,0 +1,64 @@
+The jointCPUE package as a whole is distributed under GPL-3 (GNU General Public
+License Version 3).
+
+This package contains original code together with modified code fragments
+adapted from the following open-source projects:
+
+  • VAST — https://github.com/James-Thorson-NOAA/VAST
+  • sdmTMB — https://github.com/sdmTMB/sdmTMB
+  • TMB examples — https://github.com/kaskr/adcomp/tree/master/tmb_examples
+
+----------------------------------------------------------------------
+GPL-3 derived components
+----------------------------------------------------------------------
+
+The following parts of jointCPUE contain modified code derived from GPL-3
+licensed software.
+
+VAST
+
+Modified code fragments and structural patterns adapted from VAST are used in:
+
+  src/jointCPUE.cpp
+    spatiotemporal likelihood structure
+
+  R/index.R
+    bias-correction workflow
+
+  R/extra-optimization.R
+    multi-stage optimization pattern
+
+The statistical model implemented in jointCPUE is different from VAST and
+is designed for joint CPUE standardization.
+
+sdmTMB
+
+Modified helper workflows derived from sdmTMB are used in:
+
+  R/make_mesh.R
+    mesh construction workflow patterns
+
+These implementations were adapted for the jointCPUE framework and are not
+statistically equivalent to sdmTMB.
+
+----------------------------------------------------------------------
+GPL-2 derived components
+----------------------------------------------------------------------
+
+TMB examples (kaskr/adcomp)
+  Anisotropy SPDE helper (.prep_anisotropy)
+  (R/make_mesh.R and src/jointCPUE.cpp)
+
+----------------------------------------------------------------------
+Notes
+----------------------------------------------------------------------
+
+jointCPUE does not redistribute any upstream package in compiled form.
+All referenced software remains available from their original sources.
+Only adapted code fragments and methodological patterns are included.
+
+Any errors introduced through modification are the responsibility of the
+jointCPUE authors and not the original project authors.
+
+The original licenses of the referenced projects remain in effect for the
+respective portions of code.

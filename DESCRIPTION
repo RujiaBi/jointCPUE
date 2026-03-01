@@ -5,6 +5,8 @@ Version: 0.1.0
 Date: 2025-11-26
 Authors@R: 
     person("Rujia", "Bi", email = "bikayla5@gmail.com", role = c("aut", "cre"))
+Author: Rujia Bi [aut, cre]
+Maintainer: Rujia Bi <bikayla5@gmail.com>
 Description: Provides a joint framework for catch-per-unit-effort (CPUE)
     standardization using Template Model Builder (TMB). The package
     supports joint analysis of multiple fleets and spatiotemporal random

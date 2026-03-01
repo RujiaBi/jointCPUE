@@ -5,5 +5,10 @@
 ^pkgdown$
 ^.*\.Rproj$
 ^\.Rproj\.user$
+^\.git$
+^\.gitignore$
 ^\.github$
 ^.*\.DS_Store$
+^vignettes/\.gitignore$
+^\.\.Rcheck$
+^src/.*\.(o|so|dll|dylib)$

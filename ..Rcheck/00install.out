@@ -1,0 +1,56 @@
+During startup - Warning messages:
+1: Setting LC_CTYPE failed, using "C" 
+2: Setting LC_COLLATE failed, using "C" 
+3: Setting LC_TIME failed, using "C" 
+4: Setting LC_MESSAGES failed, using "C" 
+5: Setting LC_MONETARY failed, using "C" 
+* installing *source* package 'jointCPUE' ...
+** using staged installation
+** libs
+using C++ compiler: 'Apple clang version 14.0.3 (clang-1403.0.22.14.1)'
+using SDK: 'MacOSX13.3.sdk'
+make: Nothing to be done for `all'.
+During startup - Warning messages:
+1: Setting LC_CTYPE failed, using "C" 
+2: Setting LC_COLLATE failed, using "C" 
+3: Setting LC_TIME failed, using "C" 
+4: Setting LC_MESSAGES failed, using "C" 
+5: Setting LC_MONETARY failed, using "C" 
+installing to /Users/rujiabi/Documents/New project/jointCPUE/..Rcheck/00LOCK-jointCPUE/00new/jointCPUE/libs
+** R
+** inst
+** byte-compile and prepare package for lazy loading
+During startup - Warning messages:
+1: Setting LC_CTYPE failed, using "C" 
+2: Setting LC_COLLATE failed, using "C" 
+3: Setting LC_TIME failed, using "C" 
+4: Setting LC_MESSAGES failed, using "C" 
+5: Setting LC_MONETARY failed, using "C" 
+** help
+*** installing help indices
+*** copying figures
+** building package indices
+During startup - Warning messages:
+1: Setting LC_CTYPE failed, using "C" 
+2: Setting LC_COLLATE failed, using "C" 
+3: Setting LC_TIME failed, using "C" 
+4: Setting LC_MESSAGES failed, using "C" 
+5: Setting LC_MONETARY failed, using "C" 
+** installing vignettes
+** testing if installed package can be loaded from temporary location
+During startup - Warning messages:
+1: Setting LC_CTYPE failed, using "C" 
+2: Setting LC_COLLATE failed, using "C" 
+3: Setting LC_TIME failed, using "C" 
+4: Setting LC_MESSAGES failed, using "C" 
+5: Setting LC_MONETARY failed, using "C" 
+** checking absolute paths in shared objects and dynamic libraries
+** testing if installed package can be loaded from final location
+During startup - Warning messages:
+1: Setting LC_CTYPE failed, using "C" 
+2: Setting LC_COLLATE failed, using "C" 
+3: Setting LC_TIME failed, using "C" 
+4: Setting LC_MESSAGES failed, using "C" 
+5: Setting LC_MONETARY failed, using "C" 
+** testing if installed package keeps a record of temporary installation path
+* DONE (jointCPUE)
