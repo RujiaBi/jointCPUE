@@ -7,3 +7,4 @@
 inst/doc
 .Rproj.user
 .DS_Store
+*.tar.gz
