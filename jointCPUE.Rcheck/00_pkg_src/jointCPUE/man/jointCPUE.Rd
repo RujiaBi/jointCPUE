@@ -20,6 +20,7 @@ jointCPUE(
   month_col = NULL,
   month_diffs = c("on", "off"),
   obs_sd = c("shared", "fleet"),
+  extrapolation_grid = NULL,
   silent = FALSE
 )
 }
@@ -67,6 +68,12 @@ month effect is always disabled regardless of this setting.}
 \item{obs_sd}{Either \code{"shared"} or \code{"fleet"}. Controls the observation-error
 standard deviation in the lognormal likelihood. \code{"shared"} uses a single
 SD across all fleets. \code{"fleet"} estimates one SD per fleet.}
+
+\item{extrapolation_grid}{Optional data.frame defining a common
+extrapolation grid/key across fits. Use this when comparing joint and
+single-fleet models on the same spatial integration domain. The supplied
+object must contain \code{utm_x_scale} and \code{utm_y_scale}, plus either \code{area_km2}
+or enough information to compute area (\code{lon}/\code{lat}, or \code{lon_std}/\code{lat}).}
 
 \item{silent}{Logical. Passed to \code{\link[TMB:MakeADFun]{TMB::MakeADFun()}}.}
 }

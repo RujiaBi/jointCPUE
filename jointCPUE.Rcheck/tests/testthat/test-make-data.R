@@ -99,3 +99,53 @@ test_that("make_data monthly mode keeps month fixed effects off", {
   expect_equal(prep$time$month_diffs, "off")
   expect_null(prep$time$month_col)
 })
+
+test_that("make_data can reuse a supplied raw extrapolation grid", {
+  data_input <- tiny_cpue_data()
+  utm <- make_utm(data_input, utm_zone = NULL, coord_scale = "auto")
+  mesh <- make_mesh(
+    utm$data_utm,
+    xy_cols = c("utm_x_scale", "utm_y_scale"),
+    type = "cutoff",
+    cutoff = 0.5
+  )
+
+  grid_common <- unique(utm$data_utm[, c("lon", "lat", "utm_x_scale", "utm_y_scale")])
+
+  prep_auto <- make_data(utm$data_utm, mesh)
+  prep_grid <- make_data(utm$data_utm, mesh, extrapolation_grid = grid_common)
+
+  expect_equal(prep_grid$data$n_g, nrow(grid_common))
+  expect_equal(prep_grid$key$area_km2, prep_auto$key$area_km2)
+  expect_equal(dim(prep_grid$data$A_gs), dim(prep_auto$data$A_gs))
+})
+
+test_that("make_data can reuse a supplied extrapolation key with precomputed area", {
+  data_input <- tiny_cpue_data()
+  utm <- make_utm(data_input, utm_zone = NULL, coord_scale = "auto")
+  mesh <- make_mesh(
+    utm$data_utm,
+    xy_cols = c("utm_x_scale", "utm_y_scale"),
+    type = "cutoff",
+    cutoff = 0.5
+  )
+
+  prep_auto <- make_data(utm$data_utm, mesh)
+
+  extra_key <- data.frame(
+    utm_x_scale = mean(range(prep_auto$key$utm_x_scale)) + 0.01,
+    utm_y_scale = mean(range(prep_auto$key$utm_y_scale)) + 0.01,
+    area_km2 = prep_auto$key$area_km2[1]
+  )
+
+  grid_common <- rbind(
+    prep_auto$key[, c("utm_x_scale", "utm_y_scale", "area_km2")],
+    extra_key
+  )
+
+  prep_grid <- make_data(utm$data_utm, mesh, extrapolation_grid = grid_common)
+
+  expect_equal(prep_grid$data$n_g, nrow(grid_common))
+  expect_equal(length(prep_grid$data$area_g), nrow(grid_common))
+  expect_equal(dim(prep_grid$data$A_gs), c(nrow(grid_common), ncol(prep_auto$data$A_gs)))
+})

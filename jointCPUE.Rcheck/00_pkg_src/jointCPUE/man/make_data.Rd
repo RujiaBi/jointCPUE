@@ -10,7 +10,8 @@ make_data(
   area_scale = "auto",
   index = c("monthly", "yearly"),
   month_col = NULL,
-  month_diffs = c("on", "off")
+  month_diffs = c("on", "off"),
+  extrapolation_grid = NULL
 )
 }
 \arguments{
@@ -31,6 +32,13 @@ effect is prepared when \code{index = "yearly"}. The month effect uses a
 sum-to-zero constraint over observed month levels, enters the observation
 model only, and is excluded from the standardized index. When
 \code{index = "monthly"}, the month effect is always disabled.}
+
+\item{extrapolation_grid}{Optional data.frame defining the extrapolation
+grid/key shared across fits. Use this to force joint and single-fleet
+models onto the same spatial integration domain. If \code{NULL}, the grid is
+built automatically from unique observed locations in \code{data_utm}. Supplied
+grids must contain \code{utm_x_scale} and \code{utm_y_scale}, plus either \code{area_km2}
+or enough information to compute area (\code{lon}/\code{lat}, or \code{lon_std}/\code{lat}).}
 }
 \value{
 A list with elements \code{data}, \code{key}, \code{scales}, and \code{time}.

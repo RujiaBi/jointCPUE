@@ -50,6 +50,8 @@ If \code{"rw"}, the field follows a first-order random walk through time.}
 
 \item{ncores}{Optional integer. If provided, sets the number of OpenMP threads. Passed to \code{\link[TMB:openmp]{TMB::openmp()}}.}
 
+\item{...}{Passed to \code{\link[=make_data]{make_data()}} (for example \code{area_scale}).}
+
 \item{index}{Either \code{"monthly"} or \code{"yearly"}. Chooses the time resolution of the
 standardized index.}
 

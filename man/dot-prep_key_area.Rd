@@ -4,7 +4,13 @@
 \alias{.prep_key_area}
 \title{Internal: key + area scaling + A_gs}
 \usage{
-.prep_key_area(combined_data, mesh_fm, area_scale = "auto", ...)
+.prep_key_area(
+  combined_data,
+  mesh_fm,
+  area_scale = "auto",
+  extrapolation_grid = NULL,
+  ...
+)
 }
 \arguments{
 \item{combined_data}{Data after UTM scaling, containing lon/lat and utm_x_scale/utm_y_scale.}
@@ -12,6 +18,10 @@
 \item{mesh_fm}{A fmesher mesh object (not an intCPUEmesh wrapper).}
 
 \item{area_scale}{Numeric or "auto".}
+
+\item{extrapolation_grid}{Optional user-supplied extrapolation grid or key.
+Must contain \code{utm_x_scale} and \code{utm_y_scale}, plus either \code{area_km2} or
+enough information to compute area (\code{lon}/\code{lat}, or \code{lon_std}/\code{lat}).}
 
 \item{...}{Passed to \code{calculate_area()} (e.g., cellsize, crs_equal_area, check_grid).}
 }
