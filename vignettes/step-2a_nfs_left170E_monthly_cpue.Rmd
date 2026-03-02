@@ -283,7 +283,7 @@ plots_4$spatial_residual
 # Plot fleet catchability differences
 
 ```{r}
-fleet_labels <- c("CHN", "JPN", "KOR", "RUS", "TWN_hand", "TWN_machine")
+fleet_labels <- c("CHN", "CT_hand", "CT_machine", "JPN", "KOR", "RUS")
 ```
 
 ```{r}
