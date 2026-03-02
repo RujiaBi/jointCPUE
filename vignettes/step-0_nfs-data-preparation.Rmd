@@ -30,7 +30,7 @@ The workflow covers:
 
 - importing member-specific source files
 - standardizing columns into a common format
-- splitting Taiwan records by gear configuration
+- splitting Chinese Taipei records by gear configuration
 - creating 0-based yearly and monthly indices
 - plotting fleet coverage in space and time
 - splitting the data at `170E`
@@ -65,7 +65,7 @@ chn <- read.csv(".../CE_NFS_China_2005-2024_0.csv")
 - `RUS`: drift-net; effort in vessel-days
 - `KOR`: gear type not clearly distinguished
 
-# Split Taiwan records by effort configuration
+# Split Chinese Taipei records by effort configuration
 
 ```{r}
 ct <- ct %>%
