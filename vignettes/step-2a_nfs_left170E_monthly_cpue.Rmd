@@ -98,6 +98,7 @@ fit_1 <- jointCPUE(
   q_diffs_system = "on",
   q_diffs_time = "off",
   q_diffs_spatial = "off",
+  obs_sd = "fleet",
   ncores = ncores
 )
 ```
@@ -146,6 +147,7 @@ fit_2 <- jointCPUE(
   q_diffs_system = "on",
   q_diffs_time = "off",
   q_diffs_spatial = "off",
+  obs_sd = "fleet",
   ncores = ncores
 )
 ```
@@ -195,6 +197,7 @@ fit_3 <- jointCPUE(
   q_diffs_system = "on",
   q_diffs_time = "off",
   q_diffs_spatial = "off",
+  obs_sd = "fleet",
   ncores = ncores
 )
 ```
@@ -244,6 +247,7 @@ fit_4 <- jointCPUE(
   q_diffs_system = "on",
   q_diffs_time = "off",
   q_diffs_spatial = "on",
+  obs_sd = "fleet",
   ncores = ncores
 )
 ```

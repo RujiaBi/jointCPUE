@@ -437,7 +437,7 @@ $$
 ``` r
 dd <- dd_left_170
 floor_value <- 1e-05
-fleet_labels <- c("CHN", "JPN", "KOR", "RUS", "TWN_hand", "TWN_machine")
+fleet_labels <- c("CHN", "CT_hand", "CT_machine", "JPN", "KOR", "RUS")
 ```
 
 ### Yearly CPUE
@@ -618,7 +618,7 @@ plot_q_diffs_system(fit_month, fleet_labels = fleet_labels)
 
 ``` r
 dd <- dd_right_170
-fleet_labels <- c("CHN", "JPN", "KOR", "TWN_machine")
+fleet_labels <- c("CHN", "CT_machine", "JPN", "KOR")
 ```
 
 ### Yearly CPUE
