@@ -52,7 +52,7 @@ At a high level, the package treats observed CPUE as the product of
 population biomass density and catchability:
 
 ``` text
-CPUE[f,s,t] = Biomass[f,s,t] * q[f,s,t]
+CPUE[f,s,t] = Biomass[s,t] * q[f,s,t]
 ```
 
 where:
