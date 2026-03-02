@@ -136,8 +136,8 @@ mk_dd <- function(dat, cols, fleet) {
 dd <- bind_rows(
   mk_dd(chn,      c(1:3, 5:7, 10,  9, 12), "CHN"),
   mk_dd(jpn,      c(1:3, 6:8, 13, 12, 14), "JPN"),
-  mk_dd(ct_hand, c(1:3, 5:7, 11, 12, 15), "CT_hand"),
-  mk_dd(ct_mac,  c(1:3, 5:7, 13:15),      "CT_machine"),
+  mk_dd(ct_hand, c(1:3, 5:7, 11, 12, 15),  "CT_hand"),
+  mk_dd(ct_mac,  c(1:3, 5:7, 13:15),       "CT_machine"),
   mk_dd(kor,      c(1:3, 5:7, 11:13),      "KOR"),
   mk_dd(rus,      c(1:3, 5:7, 11:13),      "RUS")
 )
@@ -152,11 +152,11 @@ dd <- dd %>%
     Y = Latitude,
     Fleet_code = case_when(
       Fleet == "CHN" ~ 0L,
-      Fleet == "JPN" ~ 1L,
-      Fleet == "KOR" ~ 2L,
-      Fleet == "RUS" ~ 3L,
-      Fleet == "CT_hand" ~ 4L,
-      Fleet == "CT_machine" ~ 5L,
+      Fleet == "CT_hand" ~ 1L,
+      Fleet == "CT_machine" ~ 2L,
+      Fleet == "JPN" ~ 3L,
+      Fleet == "KOR" ~ 4L,
+      Fleet == "RUS" ~ 5L,
       TRUE ~ NA_integer_
     ),
     Presence = if_else(Catch > 0, 1L, 0L),
@@ -249,11 +249,11 @@ plot_temporal_coverage <- function(dat, month_lookup) {
       values = c(
         "No data" = "grey92",
         "CHN" = "#C94C4C",
-        "JPN" = "#E76F51",
-        "KOR" = "#457B9D",
-        "RUS" = "#8D99AE",
-        "CT_hand" = "#F4A261",
-        "CT_machine" = "#2A9D8F"
+        "CT_hand" = "#E76F51",
+        "CT_machine" = "#457B9D",
+        "JPN" = "#8D99AE",
+        "KOR" = "#F4A261",
+        "RUS" = "#2A9D8F"
       )
     ) +
     scale_x_continuous(
