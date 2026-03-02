@@ -266,6 +266,7 @@ fit <- jointCPUE(
   q_diffs_system = "on",
   q_diffs_time = "off",
   q_diffs_spatial = "off",
+  obs_sd = "fleet",
   ncores = 4
 )
 ```
@@ -290,6 +291,16 @@ fit <- jointCPUE(
 
 These terms are centered relative to the reference fleet and are used to
 adjust catchability, not the standardized abundance index.
+
+### Observation error
+
+- `obs_sd = "shared"` uses one lognormal observation SD across all
+  fleets
+- `obs_sd = "fleet"` estimates one lognormal observation SD for each
+  fleet
+
+This setting changes the observation-error structure only. It does not
+change how the standardized abundance index is calculated.
 
 ## Extract the standardized index
 
@@ -392,8 +403,10 @@ q^{(\mathrm{space})}_{f_i,s_i} +
 \varepsilon_i,
 $$
 
-where $b_i$ is CPUE, $\beta_{m_i}$ is the month fixed effect used only
-for yearly models, and $\sum_m \beta_m = 0$. The standardized index is
+where $b_i$ is CPUE, $\beta_{m_i}$ denotes an optional month fixed
+effect for yearly models. This term is included only when
+`month_diffs = "on"`; otherwise, it is omitted. When included, the
+constraint $\sum_m \beta_m = 0$ is imposed. The standardized index is
 then calculated from the population-level latent surface only:
 
 $$
@@ -424,7 +437,7 @@ $$
 ``` r
 dd <- dd_left_170
 floor_value <- 1e-05
-fleet_labels <- c("CHN", "JPN", "KOR", "RUS", "TWN_hand", "TWN_machine")
+fleet_labels <- c("CHN", "CT_hand", "CT_machine", "JPN", "KOR", "RUS")
 ```
 
 ### Yearly CPUE
@@ -465,13 +478,14 @@ fit_year <- jointCPUE(
   data_utm = data_utm,
   mesh = mesh,
   index = "yearly",
-  month_diffs = "on",
+  month_diffs = "off",
   pop_spatial = "on",
   pop_spatiotemporal = "on",
   pop_spatiotemporal_type = "iid",
   q_diffs_system = "on",
   q_diffs_time = "off",
   q_diffs_spatial = "on",
+  obs_sd = "fleet",
   ncores = ncores
 )
 ```
@@ -560,6 +574,7 @@ fit_month <- jointCPUE(
   q_diffs_system = "on",
   q_diffs_time = "off",
   q_diffs_spatial = "off",
+  obs_sd = "fleet",
   ncores = ncores
 )
 ```
@@ -603,7 +618,7 @@ plot_q_diffs_system(fit_month, fleet_labels = fleet_labels)
 
 ``` r
 dd <- dd_right_170
-fleet_labels <- c("CHN", "JPN", "KOR", "TWN_machine")
+fleet_labels <- c("CHN", "CT_machine", "JPN", "KOR")
 ```
 
 ### Yearly CPUE
@@ -639,13 +654,14 @@ fit_year <- jointCPUE(
   data_utm = data_utm,
   mesh = mesh,
   index = "yearly",
-  month_diffs = "on",
+  month_diffs = "off",
   pop_spatial = "on",
   pop_spatiotemporal = "on",
   pop_spatiotemporal_type = "iid",
   q_diffs_system = "on",
   q_diffs_time = "off",
   q_diffs_spatial = "on",
+  obs_sd = "fleet",
   ncores = ncores
 )
 ```
@@ -730,6 +746,7 @@ fit_month <- jointCPUE(
   q_diffs_system = "on",
   q_diffs_time = "off",
   q_diffs_spatial = "off",
+  obs_sd = "fleet",
   ncores = ncores
 )
 ```

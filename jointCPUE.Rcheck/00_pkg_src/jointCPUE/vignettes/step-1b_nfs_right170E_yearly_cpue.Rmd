@@ -58,7 +58,7 @@ data_input <- data.frame(
   lat = dd$Y,
   month = dd$Month,
   tid = dd$t_year,
-  fleetid = dd$Fleet_code
+  fleetid = as.numeric(as.factor(dd$Fleet_code)) - 1
 )
 ```
 
@@ -95,6 +95,7 @@ fit_1 <- jointCPUE(
   q_diffs_system = "on",
   q_diffs_time = "off",
   q_diffs_spatial = "off",
+  obs_sd = "fleet",
   ncores = ncores
 )
 ```
@@ -144,6 +145,7 @@ fit_2 <- jointCPUE(
   q_diffs_system = "on",
   q_diffs_time = "off",
   q_diffs_spatial = "off",
+  obs_sd = "fleet",
   ncores = ncores
 )
 ```
@@ -194,6 +196,7 @@ fit_3 <- jointCPUE(
   q_diffs_system = "on",
   q_diffs_time = "off",
   q_diffs_spatial = "off",
+  obs_sd = "fleet",
   ncores = ncores
 )
 ```
@@ -247,6 +250,7 @@ fit_4 <- jointCPUE(
   q_diffs_system = "on",
   q_diffs_time = "off",
   q_diffs_spatial = "off",
+  obs_sd = "fleet",
   ncores = ncores
 )
 ```
@@ -297,6 +301,7 @@ fit_5 <- jointCPUE(
   q_diffs_system = "on",
   q_diffs_time = "off",
   q_diffs_spatial = "on",
+  obs_sd = "fleet",
   ncores = ncores
 )
 ```
@@ -336,7 +341,7 @@ plots_5$spatial_residual
 # Plot fleet catchability differences
 
 ```{r}
-fleet_labels <- c("CHN", "JPN", "KOR", "RUS", "TWN_hand", "TWN_machine")
+fleet_labels <- c("CHN", "CT_machine", "JPN", "KOR")
 ```
 
 ```{r}

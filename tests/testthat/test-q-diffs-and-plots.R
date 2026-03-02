@@ -33,6 +33,7 @@ test_that("plot helpers return ggplot objects for available q-differences and in
   expect_s3_class(plot_q_diffs_system(fit), "ggplot")
   expect_s3_class(plot_q_diffs_time(fit, time_values = c(2001, 2002, 2004)), "ggplot")
   expect_s3_class(plot_q_diffs_spatial(fit), "ggplot")
+  expect_s3_class(plot_anisotropy(fit), "ggplot")
   month_plot <- plot_month_diffs(fit)
   expect_s3_class(month_plot, "ggplot")
   expect_s3_class(

@@ -30,7 +30,7 @@ The workflow covers:
 
 - importing member-specific source files
 - standardizing columns into a common format
-- splitting Taiwan records by gear configuration
+- splitting Chinese Taipei records by gear configuration
 - creating 0-based yearly and monthly indices
 - plotting fleet coverage in space and time
 - splitting the data at `170E`
@@ -52,7 +52,7 @@ library(tidyr)
 
 ```{r}
 jpn <- read_excel(".../20251125Data sharing template NFS Japan (by Month and Grid)_2017-2024.xlsx")
-twn <- read_excel(".../1x1-degree catch and effort data NFS_CT.xlsx")
+ct <- read_excel(".../1x1-degree catch and effort data NFS_CT.xlsx")
 rus <- read_excel(".../NFS_RUS_NW_ed1.xlsx")
 kor <- read_excel(".../Data sharing templete NFS up to 2025_KOR.xlsx")
 chn <- read.csv(".../CE_NFS_China_2005-2024_0.csv")
@@ -61,23 +61,23 @@ chn <- read.csv(".../CE_NFS_China_2005-2024_0.csv")
 # Data notes
 
 - `JPN`: 2017-2024; machine jigging; January-February and April-December
-- `TWN`: mixed handline and machine-jigging records
+- `CT`: mixed handline and machine-jigging records
 - `RUS`: drift-net; effort in vessel-days
 - `KOR`: gear type not clearly distinguished
 
-# Split Taiwan records by effort configuration
+# Split Chinese Taipei records by effort configuration
 
 ```{r}
-twn <- twn %>%
+ct <- ct %>%
   mutate(
     eff1 = suppressWarnings(as.numeric(`Effort number 1`)),
     eff2 = suppressWarnings(as.numeric(`Effort number 2`))
   )
 
-twn_hand <- twn %>% filter(!is.na(eff1), eff1 > 0, is.na(eff2) | eff2 == 0)
-twn_mac  <- twn %>% filter((is.na(eff1) | eff1 == 0), !is.na(eff2), eff2 > 0)
-twn_both <- twn %>% filter(!is.na(eff1), eff1 > 0, !is.na(eff2), eff2 > 0)
-twn_no   <- twn %>% filter((is.na(eff1) | eff1 == 0), is.na(eff2) | eff2 == 0)
+ct_hand <- ct %>% filter(!is.na(eff1), eff1 > 0, is.na(eff2) | eff2 == 0)
+ct_mac  <- ct %>% filter((is.na(eff1) | eff1 == 0), !is.na(eff2), eff2 > 0)
+ct_both <- ct %>% filter(!is.na(eff1), eff1 > 0, !is.na(eff2), eff2 > 0)
+ct_no   <- ct %>% filter((is.na(eff1) | eff1 == 0), is.na(eff2) | eff2 == 0)
 ```
 
 # Remove known unusable records
@@ -136,8 +136,8 @@ mk_dd <- function(dat, cols, fleet) {
 dd <- bind_rows(
   mk_dd(chn,      c(1:3, 5:7, 10,  9, 12), "CHN"),
   mk_dd(jpn,      c(1:3, 6:8, 13, 12, 14), "JPN"),
-  mk_dd(twn_hand, c(1:3, 5:7, 11, 12, 15), "TWN_hand"),
-  mk_dd(twn_mac,  c(1:3, 5:7, 13:15),      "TWN_machine"),
+  mk_dd(ct_hand, c(1:3, 5:7, 11, 12, 15),  "CT_hand"),
+  mk_dd(ct_mac,  c(1:3, 5:7, 13:15),       "CT_machine"),
   mk_dd(kor,      c(1:3, 5:7, 11:13),      "KOR"),
   mk_dd(rus,      c(1:3, 5:7, 11:13),      "RUS")
 )
@@ -152,11 +152,11 @@ dd <- dd %>%
     Y = Latitude,
     Fleet_code = case_when(
       Fleet == "CHN" ~ 0L,
-      Fleet == "JPN" ~ 1L,
-      Fleet == "KOR" ~ 2L,
-      Fleet == "RUS" ~ 3L,
-      Fleet == "TWN_hand" ~ 4L,
-      Fleet == "TWN_machine" ~ 5L,
+      Fleet == "CT_hand" ~ 1L,
+      Fleet == "CT_machine" ~ 2L,
+      Fleet == "JPN" ~ 3L,
+      Fleet == "KOR" ~ 4L,
+      Fleet == "RUS" ~ 5L,
       TRUE ~ NA_integer_
     ),
     Presence = if_else(Catch > 0, 1L, 0L),
@@ -249,11 +249,11 @@ plot_temporal_coverage <- function(dat, month_lookup) {
       values = c(
         "No data" = "grey92",
         "CHN" = "#C94C4C",
-        "JPN" = "#E76F51",
-        "KOR" = "#457B9D",
-        "RUS" = "#8D99AE",
-        "TWN_hand" = "#F4A261",
-        "TWN_machine" = "#2A9D8F"
+        "CT_hand" = "#E76F51",
+        "CT_machine" = "#457B9D",
+        "JPN" = "#8D99AE",
+        "KOR" = "#F4A261",
+        "RUS" = "#2A9D8F"
       )
     ) +
     scale_x_continuous(

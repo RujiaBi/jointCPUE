@@ -9,7 +9,7 @@
 * using options '--no-manual --ignore-vignettes'
 * checking for file 'jointCPUE/DESCRIPTION' ... OK
 * checking extension type ... Package
-* this is package 'jointCPUE' version '0.1.0'
+* this is package 'jointCPUE' version '0.1.1'
 * package encoding: UTF-8
 * checking package namespace information ... OK
 * checking package dependencies ... OK
@@ -40,7 +40,6 @@
 * checking whether the package can be unloaded cleanly ... OK
 * checking whether the namespace can be loaded with stated dependencies ... OK
 * checking whether the namespace can be unloaded cleanly ... OK
-* checking loading without being on the library search path ... OK
 * checking dependencies in R code ... OK
 * checking S3 generic/method consistency ... OK
 * checking replacement functions ... OK

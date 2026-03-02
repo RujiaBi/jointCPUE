@@ -14,6 +14,7 @@ make_data	make_data
 make_mesh	make_mesh
 make_utm	make_utm
 plot.jointCPUEmesh	plot.jointCPUEmesh
+plot_anisotropy	plot_anisotropy
 plot_index	plot_index
 plot_month_diffs	plot_month_diffs
 plot_q_diffs_spatial	plot_q_diffs_spatial

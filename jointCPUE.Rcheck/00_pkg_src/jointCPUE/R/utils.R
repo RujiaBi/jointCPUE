@@ -40,6 +40,7 @@
 }
 
 utils::globalVariables(c(
+  "component",
   "effect",
   "fleet",
   "observed",
@@ -51,6 +52,8 @@ utils::globalVariables(c(
   "utm_y_scale",
   "value",
   "x",
+  "xend",
   "y",
+  "yend",
   "z"
 ))

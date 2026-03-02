@@ -31,7 +31,13 @@ mock_jointCPUE_fit <- function(
   )
 
   obj <- list(
-    env = list(last.par.best = 0),
+    env = list(
+      last.par.best = c(
+        ln_H_input1 = 0,
+        ln_H_input2 = 0,
+        ln_range_1 = log(2)
+      )
+    ),
     report = function(par) report_out
   )
 
