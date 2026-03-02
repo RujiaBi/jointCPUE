@@ -71,7 +71,7 @@ log(CPUE[f,s,t]) = y[t] + omega[s] + epsilon[s,t] + q_diffs[f,s,t]
 Equivalently,
 
 ``` text
-log(Density[s,t]) = y[t] + omega[s] + epsilon[s,t]
+log(Biomass[s,t]) = y[t] + omega[s] + epsilon[s,t]
 log(q[f,s,t])     = q_diffs[f,s,t]
 ```
 
