@@ -4,6 +4,19 @@
 #define _USE_MATH_DEFINES
 #include <cmath>
 
+using namespace tmbutils;
+
+template<class Type>
+struct LOSM_t : vector<SparseMatrix<Type> > {
+  LOSM_t(SEXP x) {
+    this->resize(LENGTH(x));
+    for (int i = 0; i < LENGTH(x); i++) {
+      SEXP sm = VECTOR_ELT(x, i);
+      (*this)(i) = asSparseMatrix<Type>(sm);
+    }
+  }
+};
+
 template<class Type>
 Type dlnorm_bc(const Type& x, const Type& meanlog, const Type& sdlog, int give_log = 0) {
   Type adjusted_meanlog = meanlog - pow(sdlog, 2) / 2;
@@ -75,6 +88,30 @@ Type objective_function<Type>::operator() ()
   DATA_IMATRIX(Ais_ij);
   DATA_VECTOR(Ais_x);
 
+  DATA_INTEGER(has_smooths_catch);
+  DATA_MATRIX(Xs_catch);
+  DATA_STRUCT(Zs_catch, LOSM_t);
+  DATA_IVECTOR(b_smooth_start_catch);
+  DATA_INTEGER(has_fixed_catch);
+  DATA_MATRIX(Xf_catch);
+  DATA_INTEGER(has_random_factors_catch);
+  DATA_STRUCT(Zf_catch, LOSM_t);
+  DATA_IVECTOR(b_factor_start_catch);
+
+  DATA_INTEGER(has_smooths_pop);
+  DATA_MATRIX(Xs_pop_i);
+  DATA_STRUCT(Zs_pop_i, LOSM_t);
+  DATA_MATRIX(Xs_pop_g);
+  DATA_STRUCT(Zs_pop_g, LOSM_t);
+  DATA_IVECTOR(b_smooth_start_pop);
+  DATA_INTEGER(has_fixed_pop);
+  DATA_MATRIX(Xf_pop_i);
+  DATA_MATRIX(Xf_pop_g);
+  DATA_INTEGER(has_random_factors_pop);
+  DATA_STRUCT(Zf_pop_i, LOSM_t);
+  DATA_STRUCT(Zf_pop_g, LOSM_t);
+  DATA_IVECTOR(b_factor_start_pop);
+
   DATA_SCALAR(matern_range);
   DATA_SCALAR(range_prob);
   DATA_SCALAR(matern_sigma_0);
@@ -101,6 +138,18 @@ Type objective_function<Type>::operator() ()
 
   PARAMETER_VECTOR(yq_t_1);
   PARAMETER_VECTOR(month_beta);
+  PARAMETER_VECTOR(bs_catch);
+  PARAMETER_VECTOR(b_smooth_catch);
+  PARAMETER_VECTOR(ln_smooth_sigma_catch);
+  PARAMETER_VECTOR(bf_catch);
+  PARAMETER_VECTOR(b_factor_catch);
+  PARAMETER_VECTOR(ln_factor_sigma_catch);
+  PARAMETER_VECTOR(bs_pop);
+  PARAMETER_VECTOR(b_smooth_pop);
+  PARAMETER_VECTOR(ln_smooth_sigma_pop);
+  PARAMETER_VECTOR(bf_pop);
+  PARAMETER_VECTOR(b_factor_pop);
+  PARAMETER_VECTOR(ln_factor_sigma_pop);
   PARAMETER_VECTOR(omega_s_1);
   PARAMETER_MATRIX(epsilon_st_1);
   PARAMETER_VECTOR(fleet_f);
@@ -202,6 +251,103 @@ Type objective_function<Type>::operator() ()
     }
   }
 
+  vector<Type> eta_smooth_catch(n_i);
+  vector<Type> eta_smooth_pop_i(n_i);
+  vector<Type> eta_smooth_pop_g(n_g * n_t);
+  vector<Type> eta_fixed_catch(n_i);
+  vector<Type> eta_factor_catch(n_i);
+  vector<Type> eta_fixed_pop_i(n_i);
+  vector<Type> eta_fixed_pop_g(n_g * n_t);
+  vector<Type> eta_factor_pop_i(n_i);
+  vector<Type> eta_factor_pop_g(n_g * n_t);
+  eta_smooth_catch.setZero();
+  eta_smooth_pop_i.setZero();
+  eta_smooth_pop_g.setZero();
+  eta_fixed_catch.setZero();
+  eta_factor_catch.setZero();
+  eta_fixed_pop_i.setZero();
+  eta_fixed_pop_g.setZero();
+  eta_factor_pop_i.setZero();
+  eta_factor_pop_g.setZero();
+
+  if (has_smooths_catch == 1) {
+    int n_smooth = b_smooth_start_catch.size();
+    for (int s = 0; s < n_smooth; s++) {
+      int k_s = Zs_catch(s).cols();
+      int start = b_smooth_start_catch(s);
+      Type smooth_sd = exp(ln_smooth_sigma_catch(s));
+      vector<Type> beta(k_s);
+      for (int j = 0; j < k_s; j++) {
+        beta(j) = b_smooth_catch(start + j);
+        nll -= dnorm(beta(j), Type(0.0), smooth_sd, true);
+      }
+      eta_smooth_catch += Zs_catch(s) * beta;
+    }
+    if (Xs_catch.cols() > 0) {
+      eta_smooth_catch += Xs_catch * bs_catch;
+    }
+  }
+
+  if (has_fixed_catch == 1 && Xf_catch.cols() > 0) {
+    eta_fixed_catch += Xf_catch * bf_catch;
+  }
+
+  if (has_random_factors_catch == 1) {
+    int n_factor = b_factor_start_catch.size();
+    for (int s = 0; s < n_factor; s++) {
+      int k_s = Zf_catch(s).cols();
+      int start = b_factor_start_catch(s);
+      Type factor_sd = exp(ln_factor_sigma_catch(s));
+      vector<Type> beta(k_s);
+      for (int j = 0; j < k_s; j++) {
+        beta(j) = b_factor_catch(start + j);
+        nll -= dnorm(beta(j), Type(0.0), factor_sd, true);
+      }
+      eta_factor_catch += Zf_catch(s) * beta;
+    }
+  }
+
+  if (has_smooths_pop == 1) {
+    int n_smooth = b_smooth_start_pop.size();
+    for (int s = 0; s < n_smooth; s++) {
+      int k_s = Zs_pop_i(s).cols();
+      int start = b_smooth_start_pop(s);
+      Type smooth_sd = exp(ln_smooth_sigma_pop(s));
+      vector<Type> beta(k_s);
+      for (int j = 0; j < k_s; j++) {
+        beta(j) = b_smooth_pop(start + j);
+        nll -= dnorm(beta(j), Type(0.0), smooth_sd, true);
+      }
+      eta_smooth_pop_i += Zs_pop_i(s) * beta;
+      eta_smooth_pop_g += Zs_pop_g(s) * beta;
+    }
+    if (Xs_pop_i.cols() > 0) {
+      eta_smooth_pop_i += Xs_pop_i * bs_pop;
+      eta_smooth_pop_g += Xs_pop_g * bs_pop;
+    }
+  }
+
+  if (has_fixed_pop == 1 && Xf_pop_i.cols() > 0) {
+    eta_fixed_pop_i += Xf_pop_i * bf_pop;
+    eta_fixed_pop_g += Xf_pop_g * bf_pop;
+  }
+
+  if (has_random_factors_pop == 1) {
+    int n_factor = b_factor_start_pop.size();
+    for (int s = 0; s < n_factor; s++) {
+      int k_s = Zf_pop_i(s).cols();
+      int start = b_factor_start_pop(s);
+      Type factor_sd = exp(ln_factor_sigma_pop(s));
+      vector<Type> beta(k_s);
+      for (int j = 0; j < k_s; j++) {
+        beta(j) = b_factor_pop(start + j);
+        nll -= dnorm(beta(j), Type(0.0), factor_sd, true);
+      }
+      eta_factor_pop_i += Zf_pop_i(s) * beta;
+      eta_factor_pop_g += Zf_pop_g(s) * beta;
+    }
+  }
+
   vector<Type> s_effect_1(n_i);
   vector<Type> st_effect_1(n_i);
   vector<Type> month_effect_m(n_m);
@@ -280,7 +426,10 @@ Type objective_function<Type>::operator() ()
         fleet_t_effect = fleet_t(tid, j) - fleet_t_mean(j);
       }
     }
-    Type eta1 = yq_effect_1 + month_effect + s_effect_1(i) + st_effect_1(i) + f_effect_1 + fleet_t_effect + fleet_s_effect(i);
+    Type eta1 = yq_effect_1 + month_effect + s_effect_1(i) + st_effect_1(i) +
+      f_effect_1 + fleet_t_effect + fleet_s_effect(i) +
+      eta_smooth_catch(i) + eta_fixed_catch(i) + eta_factor_catch(i) +
+      eta_smooth_pop_i(i) + eta_fixed_pop_i(i) + eta_factor_pop_i(i);
     eta_hat_i(i) = eta1;
     mu_hat_i(i) = exp(eta1);
     residual_raw_i(i) = b_i(i) - mu_hat_i(i);
@@ -312,7 +461,9 @@ Type objective_function<Type>::operator() ()
   for (int t = 0; t < n_t; t++) {
     Type yq_effect_proj_1 = yq_t_1(t);
     for (int g = 0; g < n_g; g++) {
-      Type eta1_proj = yq_effect_proj_1 + s_effect_proj_1(g) + st_effect_proj_1(g, t);
+      int gt = g + n_g * t;
+      Type eta1_proj = yq_effect_proj_1 + s_effect_proj_1(g) + st_effect_proj_1(g, t) +
+        eta_smooth_pop_g(gt) + eta_fixed_pop_g(gt) + eta_factor_pop_g(gt);
       Type safe_eta1_proj = CppAD::CondExpGt(eta1_proj, max_eta_proj, max_eta_proj, eta1_proj);
       safe_eta1_proj = CppAD::CondExpLt(safe_eta1_proj, -max_eta_proj, -max_eta_proj, safe_eta1_proj);
       Type cpue = exp(safe_eta1_proj);

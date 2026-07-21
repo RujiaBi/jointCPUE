@@ -11,6 +11,9 @@ make_data(
   index = c("monthly", "yearly"),
   month_col = NULL,
   month_diffs = c("on", "off"),
+  formula_catchability = NULL,
+  formula_population = NULL,
+  projection_data = NULL,
   extrapolation_grid = NULL
 )
 }
@@ -32,6 +35,24 @@ effect is prepared when \code{index = "yearly"}. The month effect uses a
 sum-to-zero constraint over observed month levels, enters the observation
 model only, and is excluded from the standardized index. When
 \code{index = "monthly"}, the month effect is always disabled.}
+
+\item{formula_catchability}{Optional one-sided formula defining observation
+catchability covariates. \code{s()} terms are treated as penalized smooths;
+simple numeric terms are linear fixed effects; simple factor/character
+terms are fixed effects with sum-to-zero coding; \code{f(var)} terms are random
+factor effects. These terms enter the observation model only and are
+excluded from the standardized index. Numeric category codes must be
+converted to factors to request a fixed factor effect.}
+
+\item{formula_population}{Optional one-sided formula defining population
+covariates. These terms enter both the observation model and the projected
+standardized index.}
+
+\item{projection_data}{Optional data.frame giving extrapolation-grid
+covariates for \code{formula_population}. Static covariates require one row per
+grid cell with \code{utm_x_scale}, \code{utm_y_scale}, and covariate columns.
+Time-varying covariates require one row per grid cell-time combination and
+a \code{tid} column using the same 0-based coding as \code{data_utm$tid}.}
 
 \item{extrapolation_grid}{Optional data.frame defining the extrapolation
 grid/key shared across fits. Use this to force joint and single-fleet

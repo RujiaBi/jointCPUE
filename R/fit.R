@@ -16,6 +16,19 @@ NULL
 #'
 #' @param data_utm A data.frame with required columns.
 #' @param mesh An `jointCPUEmesh` or a bare fmesher mesh.
+#' @param formula_catchability Optional one-sided formula defining observation
+#'   catchability covariates. `s()` terms are penalized smooths; simple numeric
+#'   terms are linear fixed effects; simple factor/character terms are
+#'   sum-to-zero fixed effects; `f(var)` terms are random factor effects. These
+#'   terms enter the observation model only. Numeric category codes must be
+#'   converted to factors to request a fixed factor effect.
+#' @param formula_population Optional one-sided formula defining population
+#'   covariates. These terms enter both the observation model and the projected
+#'   standardized index.
+#' @param projection_data Optional extrapolation-grid covariates for
+#'   `formula_population`. Supply one row per grid cell for static covariates,
+#'   or one row per grid cell-time combination with `tid` for time-varying
+#'   covariates.
 #' @param pop_spatial "on" or "off". If "off", the population-level
 #'   time-constant spatial field is excluded from both the likelihood and index.
 #' @param pop_spatiotemporal "on" or "off". If "off", the population-level
@@ -56,6 +69,9 @@ NULL
 jointCPUE <- function(
     data_utm,
     mesh,
+    formula_catchability = NULL,
+    formula_population = NULL,
+    projection_data = NULL,
     pop_spatial = c("on", "off"),
     pop_spatiotemporal = c("on", "off"),
     pop_spatiotemporal_type = c("iid", "rw"),
@@ -92,6 +108,9 @@ jointCPUE <- function(
     index = index,
     month_col = month_col,
     month_diffs = month_diffs,
+    formula_catchability = formula_catchability,
+    formula_population = formula_population,
+    projection_data = projection_data,
     extrapolation_grid = extrapolation_grid,
     ...
   )
@@ -113,10 +132,59 @@ jointCPUE <- function(
   data_tmb$use_fleet_sd <- as.integer(obs_sd == "fleet")
   data_tmb$use_q_diffs_time <- as.integer(q_diffs_time == "on" && n_f > 1L)
   data_tmb$use_q_diffs_spatial <- as.integer(q_diffs_spatial == "on" && n_f > 1L)
+
+  has_smooths_catch <- isTRUE(data_tmb$has_smooths_catch == 1L)
+  K_smooth_catch <- if (has_smooths_catch) ncol(data_tmb$Xs_catch) else 0L
+  n_smooth_catch <- if (has_smooths_catch) length(data_tmb$Zs_catch) else 0L
+  sum_k_catch <- if (has_smooths_catch && n_smooth_catch > 0L) {
+    sum(vapply(data_tmb$Zs_catch, ncol, 0L))
+  } else {
+    0L
+  }
+  K_fixed_catch <- if (isTRUE(data_tmb$has_fixed_catch == 1L)) ncol(data_tmb$Xf_catch) else 0L
+  has_random_factors_catch <- isTRUE(data_tmb$has_random_factors_catch == 1L)
+  n_factor_random_catch <- if (has_random_factors_catch) length(data_tmb$Zf_catch) else 0L
+  sum_k_factor_catch <- if (has_random_factors_catch && n_factor_random_catch > 0L) {
+    sum(vapply(data_tmb$Zf_catch, ncol, 0L))
+  } else {
+    0L
+  }
+
+  has_smooths_pop <- isTRUE(data_tmb$has_smooths_pop == 1L)
+  K_smooth_pop <- if (has_smooths_pop) ncol(data_tmb$Xs_pop_i) else 0L
+  n_smooth_pop <- if (has_smooths_pop) length(data_tmb$Zs_pop_i) else 0L
+  sum_k_pop <- if (has_smooths_pop && n_smooth_pop > 0L) {
+    sum(vapply(data_tmb$Zs_pop_i, ncol, 0L))
+  } else {
+    0L
+  }
+  K_fixed_pop <- if (isTRUE(data_tmb$has_fixed_pop == 1L)) ncol(data_tmb$Xf_pop_i) else 0L
+  has_random_factors_pop <- isTRUE(data_tmb$has_random_factors_pop == 1L)
+  n_factor_random_pop <- if (has_random_factors_pop) length(data_tmb$Zf_pop_i) else 0L
+  sum_k_factor_pop <- if (has_random_factors_pop && n_factor_random_pop > 0L) {
+    sum(vapply(data_tmb$Zf_pop_i, ncol, 0L))
+  } else {
+    0L
+  }
   
   # ---- 3) Initial parameters (must match cpp) ----
   parameters <- .make_parameters_jointCPUE(
-    n_t = n_t, n_f = n_f, n_s = n_s, n_m = data_tmb$n_m
+    n_t = n_t,
+    n_f = n_f,
+    n_s = n_s,
+    n_m = data_tmb$n_m,
+    K_smooth_catch = K_smooth_catch,
+    n_smooth_catch = n_smooth_catch,
+    sum_k_catch = sum_k_catch,
+    K_smooth_pop = K_smooth_pop,
+    n_smooth_pop = n_smooth_pop,
+    sum_k_pop = sum_k_pop,
+    K_fixed_catch = K_fixed_catch,
+    K_fixed_pop = K_fixed_pop,
+    n_factor_random_catch = n_factor_random_catch,
+    sum_k_factor_catch = sum_k_factor_catch,
+    n_factor_random_pop = n_factor_random_pop,
+    sum_k_factor_pop = sum_k_factor_pop
   )
   
   # ---- 4) MAP (turn on/off components without touching cpp) ----
@@ -156,6 +224,19 @@ jointCPUE <- function(
 
   if (n_f > 1L && q_diffs_spatial == "on") {
     random <- c(random, "fleet_s")
+  }
+
+  if (sum_k_catch > 0L) {
+    random <- c(random, "b_smooth_catch")
+  }
+  if (sum_k_pop > 0L) {
+    random <- c(random, "b_smooth_pop")
+  }
+  if (sum_k_factor_catch > 0L) {
+    random <- c(random, "b_factor_catch")
+  }
+  if (sum_k_factor_pop > 0L) {
+    random <- c(random, "b_factor_pop")
   }
   
   random <- unique(random)
@@ -204,6 +285,8 @@ jointCPUE <- function(
       q_diffs_system = q_diffs_system,
       q_diffs_time = q_diffs_time,
       q_diffs_spatial = q_diffs_spatial,
+      formula_catchability = formula_catchability,
+      formula_population = formula_population,
       index = index,
       month_diffs = month_diffs,
       obs_sd = obs_sd,

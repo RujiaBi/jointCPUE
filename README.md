@@ -27,6 +27,8 @@ The current implementation is built around a positive-CPUE model with:
   - system
   - time
   - space
+- optional linear, smooth, fixed-factor, and random-factor covariate
+  effects for the population or catchability component
 
 For aggregated neon flying squid (NFS) data, the proportion of zero
 catches can be too low to support a stable delta-model parameterization.
@@ -65,14 +67,17 @@ On the log scale, the model is decomposed into a population-density
 component and optional fleet-specific catchability differences:
 
 ``` text
-log(CPUE[f,s,t]) = y[t] + omega[s] + epsilon[s,t] + q_diffs[f,s,t]
+log(CPUE[f,s,t]) = y[t] + omega[s] + epsilon[s,t]
+                   + covariates_population[s,t]
+                   + q_diffs[f,s,t] + covariates_catchability[f,s,t]
 ```
 
 Equivalently,
 
 ``` text
 log(Biomass[s,t]) = y[t] + omega[s] + epsilon[s,t]
-log(q[f,s,t])     = q_diffs[f,s,t]
+                    + covariates_population[s,t]
+log(q[f,s,t])     = q_diffs[f,s,t] + covariates_catchability[f,s,t]
 ```
 
 where:
@@ -81,10 +86,14 @@ where:
 - `omega[s]` is a time-constant spatial field
 - `epsilon[s,t]` is a spatiotemporal field
 - `q_diffs[f,s,t]` captures fleet-specific catchability differences
+- `covariates_population` contains effects that describe population
+  density
+- `covariates_catchability` contains effects of covariates that influence
+  catchability
 
-The first three terms determine the latent population density surface.
-The `q_diffs` terms adjust the observation model for fleet-specific
-catchability, but do not enter the standardized index itself.
+Population covariates enter both the observation model and standardized
+index. Catchability covariates and `q_diffs` adjust the observation
+model but do not enter the standardized index.
 
 ### SPDE-based spatial fields
 
@@ -123,7 +132,8 @@ projected onto an extrapolation grid and area-weighted over space to
 obtain a standardized index:
 
 ``` text
-Index[t] = sum_g (Area[g] * Density[g,t])
+Index[t] = sum_g (Area[g] * exp(y[t] + omega[g] + epsilon[g,t]
+                               + covariates_population[g,t]))
 ```
 
 This is the quantity returned by `get_index()`.
@@ -302,6 +312,54 @@ adjust catchability, not the standardized abundance index.
 This setting changes the observation-error structure only. It does not
 change how the standardized abundance index is calculated.
 
+### Covariate formulas
+
+Covariates can be assigned to either model component with one-sided
+formulas:
+
+``` r
+data_utm$season <- factor(data_utm$season)
+
+fit_covariates <- jointCPUE(
+  data_utm = data_utm,
+  mesh = mesh,
+  formula_catchability = ~ s(depth) + f(season),
+  formula_population = ~ s(sst) + chl,
+  projection_data = population_projection,
+  ncores = 4
+)
+```
+
+The supported term types are:
+
+| Formula term | Input type | Model effect |
+|----|----|----|
+| `x` | numeric or integer | linear fixed effect |
+| `x` | factor or character | fixed factor effect with sum-to-zero coding |
+| `s(x)` | numeric | penalized smooth effect |
+| `f(x)` | any values defining groups | random factor effect with an estimated SD |
+
+The input column type is important. For example, a season coded as the
+integers `1:4` is treated as a numeric linear covariate in `~ season`.
+Convert it with `factor()` when the values represent categories. A
+random factor can instead be requested explicitly with `~ f(season)`;
+random-factor effects are not subject to a hard sum-to-zero constraint.
+
+`formula_catchability` terms are evaluated only at observations and
+excluded from the index. `formula_population` terms must also be
+evaluated over the extrapolation grid. Supply `projection_data` with one
+row per grid cell for static covariates, or one row per grid cell and
+`tid` combination for time-varying covariates. The `utm_x_scale` and
+`utm_y_scale` values must match the extrapolation grid. When a
+population covariate has one unambiguous value per grid cell,
+`jointCPUE()` can infer these values from `data_utm`.
+
+The dedicated [covariate vignette](vignettes/covariates.Rmd) provides
+worked specifications for both model components. The special yearly
+`month_diffs = "on"` interface remains observation-only and sum-to-zero.
+Do not also include its `month_col` in either covariate formula; the
+package reports this duplication as an error.
+
 ## Extract the standardized index
 
 ``` r
@@ -397,31 +455,39 @@ y_{t_i} +
 \mathbf{1}_{\{\text{yearly}\}}\beta_{m_i} +
 \omega_{s_i} +
 \epsilon_{s_i,t_i} +
+\eta^{(\mathrm{pop})}_{i} +
 q^{(\mathrm{sys})}_{f_i} +
 q^{(\mathrm{time})}_{f_i,t_i} +
 q^{(\mathrm{space})}_{f_i,s_i} +
+\eta^{(\mathrm{catch})}_{i} +
 \varepsilon_i,
 $$
 
 where $b_i$ is CPUE, $\beta_{m_i}$ denotes an optional month fixed
 effect for yearly models. This term is included only when
 `month_diffs = "on"`; otherwise, it is omitted. When included, the
-constraint $\sum_m \beta_m = 0$ is imposed. The standardized index is
-then calculated from the population-level latent surface only:
+constraint $\sum_m \beta_m = 0$ is imposed. Here,
+$\eta^{(\mathrm{pop})}$ denotes terms from `formula_population`, and
+$\eta^{(\mathrm{catch})}$ denotes terms from `formula_catchability`. The
+standardized index is then calculated from the population-level latent
+surface only:
 
 $$
-I_t = \sum_{g=1}^{n_g} a_g \exp\left(y_t + \omega_g + \epsilon_{g,t}\right),
+I_t = \sum_{g=1}^{n_g} a_g \exp\left(y_t + \omega_g + \epsilon_{g,t}
++ \eta^{(\mathrm{pop})}_{g,t}\right),
 $$
 
 where $a_g$ is the extrapolation area for grid cell $g$. Fleet-specific
-q-differences do not enter the standardized index.
+q-differences and catchability covariates do not enter the standardized
+index.
 
 For the yearly index, $t$ indexes years and the month effect is excluded
 from $I_t$ even when `month_diffs = "on"`.
 
 $$
 I^{(\mathrm{year})}_t =
-\sum_{g=1}^{n_g} a_g \exp\left(y_t + \omega_g + \epsilon_{g,t}\right).
+\sum_{g=1}^{n_g} a_g \exp\left(y_t + \omega_g + \epsilon_{g,t}
++ \eta^{(\mathrm{pop})}_{g,t}\right).
 $$
 
 For the monthly index, $t$ indexes observed year-month combinations and
@@ -429,7 +495,8 @@ no separate month fixed effect is included:
 
 $$
 I^{(\mathrm{month})}_t =
-\sum_{g=1}^{n_g} a_g \exp\left(y_t + \omega_g + \epsilon_{g,t}\right).
+\sum_{g=1}^{n_g} a_g \exp\left(y_t + \omega_g + \epsilon_{g,t}
++ \eta^{(\mathrm{pop})}_{g,t}\right).
 $$
 
 ## NFS winter-spring cohort (Left of 170E)

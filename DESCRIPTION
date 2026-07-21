@@ -10,8 +10,10 @@ Maintainer: Rujia Bi <bikayla5@gmail.com>
 Description: Provides a joint framework for catch-per-unit-effort (CPUE)
     standardization using Template Model Builder (TMB). The package
     supports joint analysis of multiple fleets and spatiotemporal random
-    fields via SPDE, with an initial application to neon flying squid in
-    the NPFC Convention Area.
+    fields via SPDE. Linear, smooth, fixed-factor, and random-factor
+    covariates can be assigned to population-density or catchability
+    components, with an initial application to neon flying squid in the
+    NPFC Convention Area.
 License: GPL-3
 Depends:
     R (>= 4.4.0)
@@ -19,6 +21,7 @@ Imports:
     ggplot2,
     Matrix,
     methods,
+    mgcv,
     stats,
     fmesher,
     TMB,

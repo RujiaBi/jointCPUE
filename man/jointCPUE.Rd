@@ -7,6 +7,9 @@
 jointCPUE(
   data_utm,
   mesh,
+  formula_catchability = NULL,
+  formula_population = NULL,
+  projection_data = NULL,
   pop_spatial = c("on", "off"),
   pop_spatiotemporal = c("on", "off"),
   pop_spatiotemporal_type = c("iid", "rw"),
@@ -28,6 +31,22 @@ jointCPUE(
 \item{data_utm}{A data.frame with required columns.}
 
 \item{mesh}{An \code{jointCPUEmesh} or a bare fmesher mesh.}
+
+\item{formula_catchability}{Optional one-sided formula defining observation
+catchability covariates. \code{s()} terms are penalized smooths; simple numeric
+terms are linear fixed effects; simple factor/character terms are
+sum-to-zero fixed effects; \code{f(var)} terms are random factor effects. These
+terms enter the observation model only. Numeric category codes must be
+converted to factors to request a fixed factor effect.}
+
+\item{formula_population}{Optional one-sided formula defining population
+covariates. These terms enter both the observation model and the projected
+standardized index.}
+
+\item{projection_data}{Optional extrapolation-grid covariates for
+\code{formula_population}. Supply one row per grid cell for static covariates,
+or one row per grid cell-time combination with \code{tid} for time-varying
+covariates.}
 
 \item{pop_spatial}{"on" or "off". If "off", the population-level
 time-constant spatial field is excluded from both the likelihood and index.}

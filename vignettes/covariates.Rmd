@@ -1,0 +1,213 @@
+---
+title: "Covariates in Population and Catchability Components"
+output:
+  rmarkdown::html_vignette:
+    toc: true
+    toc_depth: 2
+vignette: >
+  %\VignetteIndexEntry{Covariates in Population and Catchability Components}
+  %\VignetteEncoding{UTF-8}
+  %\VignetteEngine{knitr::rmarkdown}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  eval = FALSE,
+  echo = TRUE,
+  warning = FALSE,
+  message = FALSE
+)
+```
+
+# Overview
+
+`jointCPUE()` supports covariates in two distinct model components:
+
+- `formula_catchability` describes the observation or catchability process.
+  Its effects are fitted to observations but excluded from the standardized
+  abundance index.
+- `formula_population` describes population density. Its effects are fitted to
+  observations and projected over the extrapolation grid, so they enter the
+  standardized index.
+
+This distinction should be made from the biological meaning of a covariate,
+not from which specification gives a better fit. For example, fishing depth
+may describe gear availability and belong in catchability, whereas an
+environmental variable used to describe habitat may belong in population
+density.
+
+# Supported formula terms
+
+Both arguments use one-sided formulas. The following terms can be combined:
+
+| Formula term | Required input type | Interpretation |
+|---|---|---|
+| `x` | numeric or integer | linear fixed effect |
+| `x` | factor or character | fixed factor effect with sum-to-zero coding |
+| `s(x)` | numeric | penalized smooth effect |
+| `f(x)` | values defining groups | independent random factor effects with an estimated SD |
+
+For example:
+
+```{r}
+fit <- jointCPUE(
+  data_utm = data_utm,
+  mesh = mesh,
+  formula_catchability = ~ s(depth) + f(season),
+  formula_population = ~ s(sst) + chl
+)
+```
+
+Here, `depth` and `sst` have smooth effects, `chl` has a linear fixed effect,
+and the levels of `season` have random effects.
+
+## Numeric versus factor variables
+
+For a simple fixed term such as `~ season`, the R column type determines the
+effect:
+
+```{r}
+## Integer values give a linear fixed effect.
+data_utm$season <- c(1L, 2L, 3L, 4L)[data_utm$season_id]
+
+## A factor gives a sum-to-zero fixed factor effect.
+data_utm$season <- factor(
+  data_utm$season,
+  levels = 1:4,
+  labels = c("winter", "spring", "summer", "autumn")
+)
+```
+
+The model cannot infer that integer values are category labels. Always convert
+numeric category codes to `factor` before using a simple fixed term. Character
+columns are also treated as factors, but an explicit factor is preferable
+because it records the intended level order.
+
+A fixed factor with \(K\) observed levels is represented by \(K-1\)
+coefficients, with the final level implied so that all \(K\) level effects sum
+to zero. In contrast, `f(season)` creates \(K\) random effects with a common
+estimated standard deviation and does not impose a hard sum-to-zero constraint.
+
+# Catchability covariates
+
+Catchability covariates require values only at the observations:
+
+```{r}
+data_utm$season <- factor(data_utm$season)
+
+fit_catchability <- jointCPUE(
+  data_utm = data_utm,
+  mesh = mesh,
+  formula_catchability = ~ s(depth) + season,
+  pop_spatial = "on",
+  pop_spatiotemporal = "on",
+  q_diffs_system = "on"
+)
+```
+
+In this model, `s(depth)` is a smooth observation-process effect and `season`
+is a sum-to-zero fixed factor effect. Neither effect is included when the
+standardized index is calculated.
+
+Use `f(season)` instead when seasons should be partially pooled through a
+random-effect distribution:
+
+```{r}
+fit_random_season <- jointCPUE(
+  data_utm = data_utm,
+  mesh = mesh,
+  formula_catchability = ~ s(depth) + f(season)
+)
+```
+
+# Population covariates and projection data
+
+Population covariates enter the index and therefore need values at every
+extrapolation-grid cell and modeled time. Static covariates can be supplied
+with one row per grid cell:
+
+```{r}
+population_projection <- data.frame(
+  utm_x_scale = extrapolation_grid$utm_x_scale,
+  utm_y_scale = extrapolation_grid$utm_y_scale,
+  sst_climatology = extrapolation_grid$sst_climatology,
+  chl_climatology = extrapolation_grid$chl_climatology
+)
+
+fit_static_environment <- jointCPUE(
+  data_utm = data_utm,
+  mesh = mesh,
+  extrapolation_grid = extrapolation_grid,
+  formula_population = ~ s(sst_climatology) + s(chl_climatology),
+  projection_data = population_projection
+)
+```
+
+The `utm_x_scale` and `utm_y_scale` values in `projection_data` must match the
+extrapolation grid. Rows may be supplied in any order; they are aligned by
+these coordinates.
+
+For time-varying covariates, supply one row for every grid cell and time. The
+`tid` values must use the same 0-based coding as `data_utm$tid`:
+
+```{r}
+population_projection_time <- expand.grid(
+  grid_row = seq_len(nrow(extrapolation_grid)),
+  tid = sort(unique(data_utm$tid))
+)
+
+population_projection_time$utm_x_scale <-
+  extrapolation_grid$utm_x_scale[population_projection_time$grid_row]
+population_projection_time$utm_y_scale <-
+  extrapolation_grid$utm_y_scale[population_projection_time$grid_row]
+
+## Join or assign one environmental value per grid cell-time combination.
+population_projection_time$sst <- projected_sst
+population_projection_time$grid_row <- NULL
+
+fit_time_environment <- jointCPUE(
+  data_utm = data_utm,
+  mesh = mesh,
+  extrapolation_grid = extrapolation_grid,
+  formula_population = ~ s(sst),
+  projection_data = population_projection_time
+)
+```
+
+If each population covariate has one unambiguous value within every
+extrapolation cell, `projection_data` may be omitted and the values are inferred
+from `data_utm`. Supplying it explicitly is recommended for time-varying
+environmental variables and whenever observation locations do not define the
+desired projection values.
+
+# Yearly month effects
+
+The existing `month_diffs` interface remains available for yearly models:
+
+```{r}
+fit_yearly <- jointCPUE(
+  data_utm = data_utm,
+  mesh = mesh,
+  index = "yearly",
+  month_col = "month",
+  month_diffs = "on",
+  formula_catchability = ~ s(depth)
+)
+```
+
+This special month effect is a sum-to-zero fixed effect that enters only the
+observation model. It is excluded from the yearly index. Do not also include
+`month` in `formula_catchability` or `formula_population` when
+`month_diffs = "on"`; `jointCPUE()` stops with an error if the effect is
+specified twice.
+
+# Practical model-building guidance
+
+Add covariates in biologically motivated groups and compare convergence,
+residual patterns, and index sensitivity. Smooth and random-factor terms add
+variance parameters, so weakly informed or highly correlated terms can make
+optimization harder. The population/catchability assignment also changes the
+estimand: moving a term between formulas changes whether its effect is retained
+in the standardized index.

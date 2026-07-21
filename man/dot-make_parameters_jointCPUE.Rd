@@ -4,7 +4,24 @@
 \alias{.make_parameters_jointCPUE}
 \title{Internal: Build initial parameter list for the jointCPUE TMB model}
 \usage{
-.make_parameters_jointCPUE(n_t, n_f, n_s, n_m = 1L)
+.make_parameters_jointCPUE(
+  n_t,
+  n_f,
+  n_s,
+  n_m = 1L,
+  K_smooth_catch = 0L,
+  n_smooth_catch = 0L,
+  sum_k_catch = 0L,
+  K_smooth_pop = 0L,
+  n_smooth_pop = 0L,
+  sum_k_pop = 0L,
+  K_fixed_catch = 0L,
+  K_fixed_pop = 0L,
+  n_factor_random_catch = 0L,
+  sum_k_factor_catch = 0L,
+  n_factor_random_pop = 0L,
+  sum_k_factor_pop = 0L
+)
 }
 \arguments{
 \item{n_t}{Number of time steps.}
@@ -15,6 +32,31 @@
 
 \item{n_m}{Number of observed calendar month levels used by the yearly
 month fixed effect.}
+
+\item{K_smooth_catch}{Number of fixed-effect columns from catchability
+smooth terms.}
+
+\item{n_smooth_catch}{Number of catchability smooth penalty blocks.}
+
+\item{sum_k_catch}{Total penalized coefficients across catchability smooths.}
+
+\item{K_smooth_pop}{Number of fixed-effect columns from population smooths.}
+
+\item{n_smooth_pop}{Number of population smooth penalty blocks.}
+
+\item{sum_k_pop}{Total penalized coefficients across population smooths.}
+
+\item{K_fixed_catch}{Number of catchability fixed covariate columns.}
+
+\item{K_fixed_pop}{Number of population fixed covariate columns.}
+
+\item{n_factor_random_catch}{Number of catchability random-factor terms.}
+
+\item{sum_k_factor_catch}{Total random-factor coefficients for catchability.}
+
+\item{n_factor_random_pop}{Number of population random-factor terms.}
+
+\item{sum_k_factor_pop}{Total random-factor coefficients for population.}
 }
 \value{
 Named list of initial parameter values for TMB::MakeADFun().
