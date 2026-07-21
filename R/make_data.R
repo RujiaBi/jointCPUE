@@ -87,7 +87,7 @@ make_data <- function(
     mesh = mesh_in,
     loc_xy = loc_xy,
     xy_cols = c("utm_x_scale", "utm_y_scale"),
-    recompute_A = "auto"
+    recompute_A = "always"
   )
   
   if (!is.null(mesh_obj$loc_xy)) {
@@ -106,6 +106,12 @@ make_data <- function(
   
   # ---- A matrices ----
   A_is <- mesh_obj$A
+  .validate_fem_basis(
+    A_is,
+    expected_rows = nrow(data_utm),
+    expected_cols = mesh$n,
+    name = "A_is"
+  )
   A_isT <- methods::as(A_is, "TsparseMatrix")
   Ais_ij <- cbind(A_isT@i, A_isT@j)
   Ais_x  <- A_isT@x

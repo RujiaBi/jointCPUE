@@ -57,6 +57,7 @@
     "n_i","n_t","n_f","n_m",
     "b_i","t_i","f_i","month_i",
     "A_is","A_gs","spde",
+    "use_q_diffs_system",
     "has_smooths_catch","Xs_catch","Zs_catch","b_smooth_start_catch",
     "has_fixed_catch","Xf_catch","has_random_factors_catch","Zf_catch","b_factor_start_catch",
     "has_smooths_pop","Xs_pop_i","Zs_pop_i","Xs_pop_g","Zs_pop_g","b_smooth_start_pop",

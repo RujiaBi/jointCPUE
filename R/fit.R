@@ -130,6 +130,7 @@ jointCPUE <- function(
     index == "yearly" && month_diffs == "on" && data_tmb$n_m > 1L
   )
   data_tmb$use_fleet_sd <- as.integer(obs_sd == "fleet")
+  data_tmb$use_q_diffs_system <- as.integer(q_diffs_system == "on" && n_f > 1L)
   data_tmb$use_q_diffs_time <- as.integer(q_diffs_time == "on" && n_f > 1L)
   data_tmb$use_q_diffs_spatial <- as.integer(q_diffs_spatial == "on" && n_f > 1L)
 

@@ -368,6 +368,12 @@ infer_cellsize_deg <- function(lon, lat, tol = 1e-6, force = c("auto", "mode", "
   key$area_km2_scaled <- key$area_km2 / area_scale_val
   
   A_gs <- fmesher::fm_basis(mesh_fm, loc = as.matrix(key[, c("utm_x_scale", "utm_y_scale")]))
+  .validate_fem_basis(
+    A_gs,
+    expected_rows = nrow(key),
+    expected_cols = mesh_fm$n,
+    name = "A_gs"
+  )
   
   list(key = key, area_scale_val = area_scale_val, A_gs = A_gs)
 }

@@ -123,6 +123,7 @@ Type objective_function<Type>::operator() ()
   DATA_INTEGER(use_pop_spatiotemporal_rw);
   DATA_INTEGER(use_month_fe);
   DATA_INTEGER(use_fleet_sd);
+  DATA_INTEGER(use_q_diffs_system);
   DATA_INTEGER(use_q_diffs_time);
   DATA_INTEGER(use_q_diffs_spatial);
 
@@ -220,8 +221,10 @@ Type objective_function<Type>::operator() ()
     }
   }
 
-  for (int f = 0; f < n_f - 1; f++) {
-    nll -= dnorm(fleet_f(f), Type(0.0), fleet_std_dev, true);
+  if (use_q_diffs_system == 1 && n_f > 1) {
+    for (int f = 0; f < n_f - 1; f++) {
+      nll -= dnorm(fleet_f(f), Type(0.0), fleet_std_dev, true);
+    }
   }
 
   if (use_q_diffs_time == 1 && n_f > 1) {
@@ -418,7 +421,10 @@ Type objective_function<Type>::operator() ()
     if (use_month_fe == 1 && n_m > 1) {
       month_effect = month_effect_m(month_i(i));
     }
-    Type f_effect_1 = (fid == 0) ? Type(0) : fleet_f(fid - 1);
+    Type f_effect_1 = Type(0.0);
+    if (use_q_diffs_system == 1 && fid > 0) {
+      f_effect_1 = fleet_f(fid - 1);
+    }
     Type fleet_t_effect = Type(0.0);
     if (use_q_diffs_time == 1 && fid > 0) {
       int j = fid - 1;

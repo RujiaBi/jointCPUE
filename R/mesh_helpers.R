@@ -29,8 +29,13 @@
       } else if (recompute_A == "always") {
         need_A <- TRUE
       } else if (recompute_A == "auto") {
-        # Heuristic: if dimensions mismatch, recompute
-        if (!identical(nrow(A), nrow(loc_xy))) need_A <- TRUE
+        old_loc <- mesh$loc_xy
+        same_locations <- !is.null(old_loc) &&
+          identical(dim(as.matrix(old_loc)), dim(as.matrix(loc_xy))) &&
+          identical(unname(as.matrix(old_loc)), unname(as.matrix(loc_xy)))
+        if (!same_locations || !identical(nrow(A), nrow(loc_xy))) {
+          need_A <- TRUE
+        }
       }
     }
     
@@ -65,4 +70,35 @@
     A = A,
     loc_centers = NULL
   ), class = "jointCPUEmesh")
+}
+
+.validate_fem_basis <- function(A, expected_rows, expected_cols, name, tolerance = 1e-6) {
+  if (!inherits(A, "Matrix") && !is.matrix(A)) {
+    stop("`", name, "` must be a matrix-like FEM basis object.", call. = FALSE)
+  }
+  if (!identical(nrow(A), as.integer(expected_rows)) ||
+      !identical(ncol(A), as.integer(expected_cols))) {
+    stop(
+      "`", name, "` has dimensions ", nrow(A), " x ", ncol(A),
+      "; expected ", expected_rows, " x ", expected_cols, ".",
+      call. = FALSE
+    )
+  }
+
+  values <- if (inherits(A, "sparseMatrix")) A@x else as.numeric(A)
+  row_sums <- as.numeric(Matrix::rowSums(A))
+  bad <- which(!is.finite(row_sums) | abs(row_sums - 1) > tolerance)
+
+  if (any(!is.finite(values)) || length(bad)) {
+    shown <- paste(utils::head(bad, 10L), collapse = ", ")
+    suffix <- if (length(bad) > 10L) ", ..." else ""
+    stop(
+      "`", name, "` contains invalid FEM projection rows",
+      if (length(bad)) paste0(" (rows: ", shown, suffix, ")") else "",
+      ". Coordinates may lie outside the mesh triangulation.",
+      call. = FALSE
+    )
+  }
+
+  invisible(A)
 }

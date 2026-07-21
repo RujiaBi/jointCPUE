@@ -37,6 +37,7 @@ test_that("jointCPUE defaults to shared observation SD", {
 
   expect_equal(fit$settings$obs_sd, "shared")
   expect_equal(fit$data_tmb$use_fleet_sd, 0L)
+  expect_equal(fit$data_tmb$use_q_diffs_system, 0L)
   expect_equal(length(rep_obj$sd_fleet), fit$data_tmb$n_f)
   expect_true(all(is.finite(rep_obj$sd_fleet)))
 })
